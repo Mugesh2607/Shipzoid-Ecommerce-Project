@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Shipzoid</title>
+    <link rel="icon" type="image/png" href="{% static 'adminpanel/images/brand/shipzoid.jpeg' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slideFade {
+            animation: slideFade 0.8s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-5xl bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row animate-slideFade">
+        
+        <!-- Left Side Image -->
+        <div class="hidden md:block w-1/2 bg-cover bg-center" 
+             style="background-image: url('{% static "adminpanel/images/brand/shipzoid.jpeg" %}');">
+        </div>
+
+        <!-- Right Side Form -->
+        <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Create an Account 🚀</h2>
+            <p class="text-gray-500 mb-6">Join us today and start your journey</p>
+
+            <form class="space-y-5">
+                <div>
+                    <label class="block text-gray-600">Full Name</label>
+                    <input type="text" placeholder="John Doe" 
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition" />
+                </div>
+                <div>
+                    <label class="block text-gray-600">Email</label>
+                    <input type="email" placeholder="you@example.com" 
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition" />
+                </div>
+                <div>
+                    <label class="block text-gray-600">Password</label>
+                    <input type="password" placeholder="••••••••" 
+                           class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 transition" />
+                </div>
+
+                <button type="submit" 
+                        class="w-full bg-teal-500 text-white py-3 rounded-lg hover:bg-teal-600 transition transform hover:scale-[1.02] shadow-lg">
+                    Sign Up
+                </button>
+            </form>
+
+            <p class="mt-6 text-sm text-gray-600">
+                Already have an account? 
+                <a href="{% url 'adminpanel:login' %}" class="text-teal-500 hover:underline">Login</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

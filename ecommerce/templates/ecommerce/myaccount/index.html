@@ -1,0 +1,766 @@
+{% include 'ecommerce/layouts/header.html' %}
+
+{% include 'ecommerce/layouts/top_menu.html' %}    
+{% load tz %}
+    <div class="container mx-auto px-4 py-8">
+        <!-- Page Header -->
+        <div class="flex items-center gap-3 mb-8">
+            <div class="p-2 bg-shipzoid-teal/10 rounded-lg">
+                <i class="fas fa-user text-2xl text-shipzoid-teal"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">My Account</h1>
+                <p class="text-gray-600">Manage your account settings and preferences</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="space-y-6">
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-gray-200 overflow-x-auto scrollbar-hide">
+                <button onclick="showTab('information')" id="tab-information" class="tab-button active flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 hover:border-brand-300 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Information
+                </button>
+                <button onclick="showTab('password')" id="tab-password" class="tab-button flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 hover:border-brand-300 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    Password
+                </button>
+                <button onclick="showTab('orders')" id="tab-orders" class="tab-button flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 border-transparent hover:text-brand-600 hover:border-brand-300 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    Orders
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            
+            <!-- Information Tab -->
+            <div id="content-information" class="tab-content active">
+                <div class="bg-white rounded-lg border shadow-sm">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-2xl font-semibold">Personal Information</h3>
+                        <p class="text-gray-600 mt-1">Update your personal details and contact information</p>
+                    </div>
+                    <div class="p-6">
+                        <form id="UpdatePersonalInformation"  class="space-y-6">
+                              {% csrf_token %}
+                            <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                                <div class="space-y-2">
+                                    <label for="full_name" class="text-sm font-medium text-gray-700">Full Name</label>
+                                    <input type="text" id="fullName" value="{{customer.full_name|default:''}}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label for="email" class="text-sm font-medium text-gray-700">Email Address</label>
+                                    <input type="email" id="email" value="{{customer.email|default:''}}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="phone" class="text-sm font-medium text-gray-700">Phone Number</label>
+                                    <input type="tel" id="phone" value="{{customer.phone|default:''}}" oninput="PhoneNumberValidation()"  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label for="address" class="text-sm font-medium text-gray-700">Address</label>
+                                <input type="text" id="address" value="{{customer.address|default:''}}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label for="city" class="text-sm font-medium text-gray-700">City</label>
+                                    <input type="text" id="city" value="{{customer.city|default:''}}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="zipCode" class="text-sm font-medium text-gray-700">PIN Code</label>
+                                    <input type="text" id="pincode" value="{{customer.pin_code|default:''}}" oninput="PincodeValidation()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" class="px-6 py-2 bg-shipzoid-teal text-white rounded-md hover:bg-shipzoid-teal-dark focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:ring-offset-2 transition-colors">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Tab -->
+            <div id="content-password" class="tab-content">
+                <div class="bg-white rounded-lg border shadow-sm">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-2xl font-semibold">Change Password</h3>
+                        <p class="text-gray-600 mt-1">Update your password to keep your account secure</p>
+                    </div>
+                <div class="p-6">
+                    <form id="ChangePasswordForm" class="space-y-6">
+                        <!-- Current Password -->
+                        <div class="space-y-2 relative">
+                            <label for="currentPassword" class="text-sm font-medium text-gray-700">Current Password</label>
+                            <div class="relative">
+                                <input type="password" id="currentPassword" autocomplete="off"
+                                    class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                <button type="button" data-toggle="#currentPassword"
+                                    class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
+                                    <!-- Eye Icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- New Password -->
+                        <div class="space-y-2 relative">
+                            <label for="newPassword" class="text-sm font-medium text-gray-700">New Password</label>
+                            <div class="relative">
+                                <input type="password" id="newPassword" autocomplete="off"
+                                    class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                <button type="button" data-toggle="#newPassword"
+                                    class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Confirm Password -->
+                        <div class="space-y-2 relative">
+                            <label for="confirmPassword" class="text-sm font-medium text-gray-700">Confirm New Password</label>
+                            <div class="relative">
+                                <input type="password" id="confirmPassword" autocomplete="off"
+                                    class="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal">
+                                <button type="button" data-toggle="#confirmPassword"
+                                    class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="flex justify-end">
+                            <button type="submit" id="changepassoword-btn"
+                                class="px-6 py-2 bg-shipzoid-teal text-white rounded-md hover:bg-shipzoid-teal-dark focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:ring-offset-2 transition-colors">
+                                Change Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                </div>
+            </div>
+
+            <!-- Orders Tab -->
+            <div id="content-orders" class="tab-content">
+                <div class="bg-white rounded-lg border shadow-sm">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-2xl font-semibold">Order History</h3>
+                        <p class="text-gray-600 mt-1">View and track your order history</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4" id="orders-container">
+                            {% if orders %}
+                            {% for order in orders %}
+                                <div class="border rounded-lg p-4 mb-4 hover:bg-gray-50 transition-colors">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold
+                                                    {% if order.status == 'confirmed' %}
+                                                            bg-yellow-100 text-yellow-800
+                                                        {% elif order.status == 'inprogress' %}
+                                                            bg-green-100 text-green-800
+                                                        {% elif order.status == 'delivered' %}
+                                                            bg-blue-100 text-blue-800
+                                                        {% else %}
+                                                            bg-purple-100 text-purple-800
+                                                        {% endif %}">
+                                        {{ order.status }}
+                                    </span>
+                                    <span class="font-medium text-gray-900">#{{ order.order_number }}</span>
+                                    </div>
+                                    <span class="text-sm text-gray-500 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    {{ order.order_date|date:"d-M-Y h:i A" }}
+                                    </span>
+                                </div>
+
+                                <!-- Summary -->
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm mb-2">
+                                    <div>
+                                    <span class="text-gray-500">Total Amount:</span>
+                                    <p class="font-medium text-gray-900">₹{{ order.grand_total }}</p>
+                                    </div>
+                                    <div>
+                                    <span class="text-gray-500">Items:</span>
+                                    <p class="font-medium text-gray-900">{{ order.total_items }} item{% if order.total_items > 1 %}s{% endif %}</p>
+                                    </div>
+                                    <div class="flex justify-end col-span-2 md:col-span-1">
+                                    <button onclick="viewOrderDetails('{{ order.order_id }}')"
+                                            class="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                                        View Details
+                                    </button>
+                                    </div>
+                                </div>
+
+                                </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-center py-8">
+                                <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                                <h3 class="text-lg font-medium text-gray-900 mb-1">No orders yet</h3>
+                                <p class="text-gray-500">Start shopping to see your orders here.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- JSON safe orders for JS -->
+{{ orders|json_script:"orders-data" }}
+    <!-- Order Details Modal -->
+    <div id="order-details-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-900">Order Details</h2>
+                    <div class="flex items-center gap-3">
+                        {% comment %} <button onclick="printOrderDetails()" class="flex items-center gap-2 px-4 py-2 bg-shipzoid-teal text-white rounded-md hover:bg-shipzoid-teal-dark transition-colors">
+                            <i class="fas fa-print"></i>
+                            Print
+                        </button> {% endcomment %}
+                        <button onclick="closeOrderDetails()" class="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="overflow-y-auto max-h-[calc(90vh-80px)]">
+                    <div id="order-details-content" class="p-6">
+                        <!-- Order details will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="success-message" class="fixed top-4 right-4 bg-shipzoid-teal text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-check-circle"></i>
+            <span id="success-text">Changes saved successfully!</span>
+        </div>
+    </div>
+
+       {% include 'ecommerce/layouts/footer.html' %}
+
+        <!-- JSON safe orders for JS -->
+        {{ orders|json_script:"orders-data" }}
+        {{ customer|json_script:"customer-data" }}
+
+
+
+           <script>
+
+        const orders = JSON.parse(document.getElementById('orders-data').textContent);
+        const customer = JSON.parse(document.getElementById('customer-data').textContent);
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`content-${tabName}`).classList.add('active');
+            
+            // Add active class to selected tab button
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successMessage = document.getElementById('success-message');
+            const successText = document.getElementById('success-text');
+            
+            successText.textContent = message;
+            successMessage.classList.remove('translate-x-full');
+            
+            setTimeout(() => {
+                successMessage.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        function getStatusColor(status) {
+            switch(status.toLowerCase()) {
+                case 'confirmed': return 'bg-yellow-100 text-yellow-800';
+                case 'inprogress': return 'bg-green-100 text-green-800';
+                case 'delivered': return 'bg-blue-100 text-blue-800';
+                default: return 'bg-purple-100 text-purple-800';
+            }
+        }
+
+        function getStatusIcon(status) {
+            switch(status.toLowerCase()) {
+                case 'confirmed': return '📦';
+                case 'inprogress': return '🔄';
+                case 'delivered': return '✅';
+                default: return '🔹';
+            }
+        }
+
+
+
+        // View order details
+        function viewOrderDetails(orderId) {
+        
+
+        const order = orders.find(o => o.order_id == orderId);
+        if(!order) return alert('Order not found');
+
+            const modal = document.getElementById('order-details-modal');
+            const content = document.getElementById('order-details-content');
+
+            content.innerHTML = `
+                <div id="printable-content">
+                    <!-- Company Header -->
+                    <div class="text-center mb-8 border-b pb-6">
+                        <div class="flex items-center justify-center gap-3 mb-3">
+                            <div class="w-12 h-12 bg-gradient-to-br from-shipzoid-teal to-shipzoid-teal-dark rounded-xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent">Shipzoid Store</h1>
+                                <p class="text-gray-500">Premium Shopping Experience</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <p>123 Business Ave, Suite 100</p>
+                            <p>New York, NY 10001</p>
+                            <p>Phone: (555) 123-4567 | Email: support@shipzoid.com</p>
+                        </div>
+                    </div>
+
+                    <!-- Order Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Information</h3>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Order ID:</span>
+                                    <span class="font-medium">${order.order_number}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Order Date:</span>
+                                    <span class="font-medium">${new Date(order.order_date).toLocaleDateString()}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Status:</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold ${getStatusColor(order.status)}">
+                                        ${getStatusIcon(order.status)}
+                                        ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
+                            <div class="space-y-2 text-sm">
+                                <div>
+                                    <span class="text-gray-600">Name:</span>
+                                    <span class="font-medium ml-2">${customer.full_name}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Email:</span>
+                                    <span class="font-medium ml-2">${customer.email}</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">Phone:</span>
+                                    <span class="font-medium ml-2">${customer.phone}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Addresses -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h3>
+                            <div class="bg-gray-50 p-4 rounded-lg text-sm">
+                                <p>${order.shippingAddress.address}</p>
+                                <p>${order.shippingAddress.city}, ${order.shippingAddress.pin_code}</p>
+                                <p>India</p>
+                                <p class="mt-2 text-gray-600">${order.shippingAddress.phone}</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Products -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Items</h3>
+                        <div class="border rounded-lg overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="text-left p-4 text-sm font-medium text-gray-900">Product</th>
+                                        <th class="text-left p-4 text-sm font-medium text-gray-900">Tax</th>
+                                        <th class="text-center p-4 text-sm font-medium text-gray-900">Quantity</th>
+                                        <th class="text-right p-4 text-sm font-medium text-gray-900">Price</th>
+                                        <th class="text-right p-4 text-sm font-medium text-gray-900">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${order.items.map(product => `
+                                        <tr>
+                                            <td class="p-4">
+                                                <div class="flex items-center gap-3">
+                                                    <img src="${product.image}" alt="${product.product_name}" class="w-12 h-12 rounded-lg object-cover">
+                                                    <span class="font-medium text-gray-900">${product.product_name}</span>
+                                                </div>
+                                            </td>
+                                            <td class="p-4 text-center text-sm">${product.tax_rate}%</td>
+                                            <td class="p-4 text-center text-sm">${product.quantity}</td>
+                                            <td class="p-4 text-right text-sm">₹${product.original_price}</td>
+                                            <td class="p-4 text-right text-sm font-medium">₹${product.original_price * product.quantity}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+                            <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Subtotal:</span>
+                                <span>₹${Number(order.subtotal).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                            </div>
+
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Tax:</span>
+                                <span>₹${Number(order.total_tax).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                            </div>
+
+                            <div class="border-t pt-2 mt-2">
+                                <div class="flex justify-between text-lg font-semibold">
+                                    <span>Total:</span>
+                                    <span class="text-shipzoid-teal">₹${Number(order.grand_total).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close order details modal
+        function closeOrderDetails() {
+            const modal = document.getElementById('order-details-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Print order details
+        function printOrderDetails() {
+            const printContent = document.getElementById('printable-content').innerHTML;
+            const originalContent = document.body.innerHTML;
+
+            // Create print styles
+            const printStyles = `
+                <style>
+                    @media print {
+                        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+                        .bg-gradient-to-r { background: linear-gradient(to right, #1e3a8a, #4ECDC4) !important; }
+                        .bg-clip-text { -webkit-background-clip: text !important; }
+                        .text-transparent { color: transparent !important; }
+                        .bg-gray-50 { background-color: #f9fafb !important; }
+                        .border { border: 1px solid #e5e7eb !important; }
+                        .border-t { border-top: 1px solid #e5e7eb !important; }
+                        .divide-y > * + * { border-top: 1px solid #e5e7eb !important; }
+                        .rounded-lg, .rounded-xl { border-radius: 8px !important; }
+                        .shadow-lg { box-shadow: none !important; }
+                        table { border-collapse: collapse; }
+                        img { max-width: 48px; max-height: 48px; }
+                    }
+                </style>
+            `;
+
+            document.body.innerHTML = printStyles + printContent;
+            window.print();
+            document.body.innerHTML = originalContent;
+
+        } 
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('order-details-modal');
+            if (event.target === modal) {
+                closeOrderDetails();
+            }
+        });
+
+
+    document.querySelectorAll('[data-toggle]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const input = document.querySelector(this.getAttribute('data-toggle'));
+            if (input.type === 'password') {
+                input.type = 'text';
+                this.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.964 9.964 0 012.498-4.042M6.18 6.18A9.965 9.965 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.957 9.957 0 01-4.458 5.568M15 12a3 3 0 00-4.243-2.828M3 3l18 18" />
+                    </svg>`;
+            } else {
+                input.type = 'password';
+                this.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>`;
+            }
+        });
+    });
+
+
+        $("#ChangePasswordForm").on("submit", function (e) {
+        e.preventDefault();
+
+        let currentPassword = $("#currentPassword").val().trim();
+        let newPassword = $("#newPassword").val().trim();
+        let confirmPassword = $("#confirmPassword").val().trim();
+
+        // ==== Client-side validation ====
+        if (!currentPassword) {
+            return Swal.fire({
+                icon: "error",
+                title: "Oops!",
+                text: "Please enter your current password.",
+                confirmButtonColor: "#ef4444"
+            });
+        }
+        if (!newPassword || newPassword.length < 6) {
+            return Swal.fire({
+                icon: "error",
+                title: "Weak Password",
+                text: "New password must be at least 6 characters long.",
+                confirmButtonColor: "#ef4444"
+            });
+        }
+        if (newPassword !== confirmPassword) {
+            return Swal.fire({
+                icon: "error",
+                title: "Mismatch",
+                text: "New password and confirm password do not match.",
+                confirmButtonColor: "#ef4444"
+            });
+        }
+
+        let btn = $("#changepassword-btn");
+        btn.prop("disabled", true).text("Processing...");
+
+        $.ajax({
+            url: "{% url 'ecommerce:change_password' %}",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword,
+                confirm_password: confirmPassword,
+            }),
+            headers: { "X-CSRFToken": "{{ csrf_token }}" },
+            success: function (response) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success!",
+                    text: response.message,
+                    confirmButtonColor: "#10b981"
+                });
+                $("#ChangePasswordForm")[0].reset();
+            },
+            error: function (xhr) {
+                let error = xhr.responseJSON?.message || "Something went wrong!";
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: error,
+                    confirmButtonColor: "#ef4444"
+                });
+            },
+            complete: function () {
+                btn.prop("disabled", false).text("Change Password");
+            }
+        });
+    });
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("UpdatePersonalInformation");
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const fullName = document.getElementById("fullName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const address = document.getElementById("address").value.trim();
+        const city = document.getElementById("city").value.trim();
+        const pincode = document.getElementById("pincode").value.trim();
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // ---- VALIDATION ----
+        if (!fullName) {
+            Swal.fire("Validation Error", "Full name is required.", "warning");
+            return;
+        }
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+            Swal.fire("Validation Error", "Please enter a valid email.", "warning");
+            return;
+        }
+        if (!phone || !/^\d{10}$/.test(phone)) {
+            Swal.fire("Validation Error", "Please enter a valid 10-digit phone number.", "warning");
+            return;
+        }
+        if (!address) {
+            Swal.fire("Validation Error", "Address is required.", "warning");
+            return;
+        }
+        if (!city) {
+            Swal.fire("Validation Error", "City is required.", "warning");
+            return;
+        }
+        if (!pincode || !/^\d{6}$/.test(pincode)) {
+            Swal.fire("Validation Error", "Please enter a valid 6-digit PIN Code.", "warning");
+            return;
+        }
+
+        // ---- AJAX REQUEST ----
+        fetch("{% url 'ecommerce:update_personal_information' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                full_name: fullName,
+                email: email,
+                phone: phone,
+                address: address,
+                city: city,
+                pin_code: pincode
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Profile Updated!",
+                    text: "Your personal information has been successfully updated.",
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Update Failed',
+                    text: data.message || 'Something went wrong. Please try again.'
+                });
+            }
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to update your information. Try again later.'
+            });
+        });
+    });
+});
+      
+
+
+
+        function PhoneNumberValidation() {
+            const phoneField = document.getElementById('phone');
+            const phone = phoneField.value.trim();
+
+            // Allow only numbers
+            phoneField.value = phone.replace(/\D/g, '');
+
+            // Check if it's exactly 10 digits
+            if (phoneField.value.length > 10) {
+                phoneField.value = phoneField.value.slice(0, 10);
+            }
+        }
+
+        function PincodeValidation() {
+            const pincodeField = document.getElementById('pincode');
+            const pin = pincodeField.value.trim();
+
+            // Allow only numbers
+            pincodeField.value = pin.replace(/\D/g, '');
+
+            // Limit to 6 digits (Indian PIN code format)
+            if (pincodeField.value.length > 6) {
+                pincodeField.value = pincodeField.value.slice(0, 6);
+            }
+        }
+
+    </script>

@@ -1,0 +1,246 @@
+{% load static %}  
+   <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-shipzoid-teal to-shipzoid-teal-dark rounded-xl flex items-center justify-center text-white text-xl font-bold">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h4 class="text-xl font-bold">Shipzoid Store</h4>
+                    </div>
+                    <p class="text-gray-400">Premium shopping experience with fast worldwide shipping.</p>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Customer Service</h5>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Shipping Info</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Returns</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Company</h5>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Press</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-semibold mb-4">Follow Us</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Shipzoid Store. All rights reserved.</p>
+            </div>
+        </div>
+
+
+
+         <div id="page-loader" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+            <div class="flex flex-col items-center space-y-4">
+                <!-- Spinner -->
+                <div class="w-16 h-16 border-4 border-shipzoid-teal border-t-transparent rounded-full animate-spin"></div>
+                
+                <!-- Loading Text -->
+                <p class="text-shipzoid-teal text-lg font-semibold animate-pulse">Loading...</p>
+            </div>
+        </div>
+    </footer>
+
+    
+<script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const nav = document.getElementById('categoryNav');
+        const scrollLeftBtn = document.getElementById('scrollLeft');
+        const scrollRightBtn = document.getElementById('scrollRight');
+        const categoryItems = document.querySelectorAll('.category-item');
+        const dropdowns = document.querySelectorAll('.category-dropdown');
+        let activeDropdown = null;
+        
+        // Check if scrolling is needed and show/hide buttons
+        function checkScroll() {
+            if (nav.scrollWidth > nav.clientWidth) {
+                scrollLeftBtn.classList.remove('hidden');
+                scrollRightBtn.classList.remove('hidden');
+                updateButtonState();
+            } else {
+                scrollLeftBtn.classList.add('hidden');
+                scrollRightBtn.classList.add('hidden');
+            }
+        }
+
+        // Update button opacity based on scroll position
+        function updateButtonState() {
+            if (nav.scrollLeft <= 0) {
+                scrollLeftBtn.style.opacity = '0.3';
+                scrollLeftBtn.style.pointerEvents = 'none';
+            } else {
+                scrollLeftBtn.style.opacity = '1';
+                scrollLeftBtn.style.pointerEvents = 'auto';
+            }
+
+            if (nav.scrollLeft >= nav.scrollWidth - nav.clientWidth - 1) {
+                scrollRightBtn.style.opacity = '0.3';
+                scrollRightBtn.style.pointerEvents = 'none';
+            } else {
+                scrollRightBtn.style.opacity = '1';
+                scrollRightBtn.style.pointerEvents = 'auto';
+            }
+        }
+
+        // Position dropdown under the category button
+        function positionDropdown(categoryItem, dropdown) {
+            const btnRect = categoryItem.getBoundingClientRect();
+            const containerRect = document.getElementById('dropdownContainer').getBoundingClientRect();
+            
+            const leftPosition = btnRect.left - containerRect.left;
+            dropdown.style.left = leftPosition + 'px';
+            dropdown.style.top = '8px'; // Small gap below the button
+        }
+
+        // Show dropdown
+        function showDropdown(categoryId) {
+            // Close all dropdowns first
+            dropdowns.forEach(d => d.classList.remove('active'));
+            categoryItems.forEach(item => item.classList.remove('active'));
+            
+            // Find and show the selected dropdown
+            const categoryItem = document.querySelector(`.category-item .category-btn[data-category-id="${categoryId}"]`).closest('.category-item');
+            const dropdown = document.querySelector(`.category-dropdown[data-category-id="${categoryId}"]`);
+            
+            if (categoryItem && dropdown) {
+                categoryItem.classList.add('active');
+                positionDropdown(categoryItem, dropdown);
+                dropdown.classList.add('active');
+                activeDropdown = dropdown;
+            }
+        }
+
+        // Hide all dropdowns
+        function hideAllDropdowns() {
+            dropdowns.forEach(d => d.classList.remove('active'));
+            categoryItems.forEach(item => item.classList.remove('active'));
+            activeDropdown = null;
+        }
+
+        // Scroll left
+        scrollLeftBtn.addEventListener('click', function() {
+            nav.scrollBy({ left: -300, behavior: 'smooth' });
+        });
+
+        // Scroll right
+        scrollRightBtn.addEventListener('click', function() {
+            nav.scrollBy({ left: 300, behavior: 'smooth' });
+        });
+
+        // Listen to scroll event
+        nav.addEventListener('scroll', function() {
+            updateButtonState();
+            // Reposition active dropdown on scroll
+            if (activeDropdown) {
+                const categoryId = activeDropdown.getAttribute('data-category-id');
+                const categoryItem = document.querySelector(`.category-item .category-btn[data-category-id="${categoryId}"]`).closest('.category-item');
+                if (categoryItem) {
+                    positionDropdown(categoryItem, activeDropdown);
+                }
+            }
+        });
+
+        // Check on load and resize
+        checkScroll();
+        window.addEventListener('resize', function() {
+            checkScroll();
+            if (activeDropdown) {
+                const categoryId = activeDropdown.getAttribute('data-category-id');
+                const categoryItem = document.querySelector(`.category-item .category-btn[data-category-id="${categoryId}"]`).closest('.category-item');
+                if (categoryItem) {
+                    positionDropdown(categoryItem, activeDropdown);
+                }
+            }
+        });
+
+        // Handle category button clicks
+        categoryItems.forEach(item => {
+            const btn = item.querySelector('.category-btn');
+            const categoryId = btn.getAttribute('data-category-id');
+            
+            // Click handler
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (item.classList.contains('active')) {
+                    hideAllDropdowns();
+                } else {
+                    showDropdown(categoryId);
+                }
+            });
+
+            // Hover handler for desktop
+            if (window.innerWidth >= 1024) {
+                item.addEventListener('mouseenter', function() {
+                    showDropdown(categoryId);
+                });
+            }
+        });
+
+        // Hover handler for dropdown container on desktop
+        if (window.innerWidth >= 1024) {
+            document.getElementById('dropdownContainer').addEventListener('mouseenter', function(e) {
+                if (e.target.closest('.category-dropdown')) {
+                    // Keep dropdown open when hovering over it
+                    return;
+                }
+            });
+
+            document.getElementById('dropdownContainer').addEventListener('mouseleave', function() {
+                hideAllDropdowns();
+            });
+
+            nav.addEventListener('mouseleave', function() {
+                // Small delay to allow moving to dropdown
+                setTimeout(function() {
+                    if (!document.getElementById('dropdownContainer').matches(':hover')) {
+                        hideAllDropdowns();
+                    }
+                }, 100);
+            });
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.category-item') && !e.target.closest('.category-dropdown')) {
+                hideAllDropdowns();
+            }
+        });
+
+        // Prevent dropdown from closing when clicking inside it
+        dropdowns.forEach(dropdown => {
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    });
+
+</script>
+         <script src="{% static 'ecommerce/js/ecommerce.js' %}"></script>

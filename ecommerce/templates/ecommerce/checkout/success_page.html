@@ -1,0 +1,166 @@
+{% load static %}
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Success - Shipzoid Store</title>
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <link rel="icon" type="image/png" href="{% static 'adminpanel/images/brand/shipzoid.jpeg' %}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'shipzoid-teal': '#4ECDC4',
+            'shipzoid-navy': '#1e3a8a',
+            'shipzoid-navy-dark': '#1e40af',
+          },
+          fontFamily: { inter: ['Inter', 'sans-serif'] },
+          animation: {
+            pulseGlow: 'pulseGlow 2s infinite',
+            float: 'float 6s ease-in-out infinite',
+            fadeIn: 'fadeIn 0.8s ease-out',
+            scaleIn: 'scaleIn 0.6s ease-out',
+          },
+          keyframes: {
+            pulseGlow: {
+              '0%,100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(78,205,196,0.6)' },
+              '50%': { transform: 'scale(1.05)', boxShadow: '0 0 20px 5px rgba(78,205,196,0.4)' },
+            },
+            float: {
+              '0%,100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+            scaleIn: { from: { transform: 'scale(0.8)', opacity: '0' }, to: { transform: 'scale(1)', opacity: '1' } },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Balloons */
+    .balloon {
+      position: absolute;
+      bottom: -150px;
+      width: 50px;
+      height: 70px;
+      background-color: var(--balloon-color, #4ECDC4);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      animation: rise 10s linear infinite;
+    }
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-120vh) scale(1.1); opacity: 0; }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-900 relative overflow-hidden">
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- Balloons -->
+  <div class="balloon" style="left:10%; --balloon-color:#4ECDC4;"></div>
+  <div class="balloon" style="left:30%; --balloon-color:#1e3a8a;"></div>
+  <div class="balloon" style="left:50%; --balloon-color:#FF6B6B;"></div>
+  <div class="balloon" style="left:70%; --balloon-color:#FFD93D;"></div>
+  <div class="balloon" style="left:85%; --balloon-color:#1e40af;"></div>
+
+  <!-- Header -->
+  <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-shipzoid-teal to-shipzoid-navy rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+            <i class="fas fa-store"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent">
+              Shipzoid Store
+            </h1>
+            <p class="text-xs text-gray-500">Confirmed your order!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Success Section -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center animate-fadeIn">
+    <!-- Animated Success Badge -->
+    <div class="w-24 h-24 bg-shipzoid-teal rounded-full mx-auto flex items-center justify-center text-white text-5xl shadow-xl animate-pulseGlow">
+      <i class="fas fa-check"></i>
+    </div>
+    <h2 class="mt-6 text-3xl font-extrabold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent animate-scaleIn">
+      Order Confirmed! 🎉
+    </h2>
+    <p class="mt-2 text-gray-600 animate-fadeIn">
+      Thank you for shopping with <span class="font-semibold">Shipzoid</span>.  
+      We're preparing your order for dispatch!
+    </p>
+
+    <!-- Order Summary -->
+    <div class="bg-white shadow-lg rounded-2xl mt-10 p-6 max-w-3xl mx-auto animate-scaleIn">
+      <h3 class="text-lg font-semibold text-shipzoid-navy mb-4">Order Summary</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+        <p><strong>Order ID:</strong> #{{ order.order_number|default:'' }}</p>
+        <p><strong>Date:</strong> {{ order.created_at|date:"d-M-Y h:i A" }}</p>
+        <p><strong>Total:</strong> ₹{{ order.total_amount|default:'' }}</p>
+        <p><strong>Payment Method:</strong> {{ order.payment_method|default:'' }}</p>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="{% url 'ecommerce:home' %}"
+         class="px-6 py-3 bg-shipzoid-teal text-white rounded-xl font-semibold shadow-md hover:scale-105 hover:shadow-lg transition transform duration-300">
+         Continue Shopping
+      </a>
+    </div>
+  </main>
+
+  <!-- Confetti Script -->
+  <script>
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const confetti = [];
+    for (let i = 0; i < 150; i++) {
+      confetti.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * 50 + 50,
+        color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+        tilt: Math.random() * 10 - 10
+      });
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetti.forEach(c => {
+        ctx.beginPath();
+        ctx.fillStyle = c.color;
+        ctx.ellipse(c.x, c.y, c.r, c.r / 2, Math.PI / 4, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+      update();
+      requestAnimationFrame(draw);
+    }
+    function update() {
+      confetti.forEach(c => {
+        c.y += c.d / 80;
+        if (c.y > canvas.height) c.y = -10;
+      });
+    }
+    draw();
+  </script>
+</body>
+</html>

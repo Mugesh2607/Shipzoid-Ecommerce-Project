@@ -1,0 +1,461 @@
+{% extends 'adminpanel/layouts/base.html' %}
+{% load permissions_tags %} 
+{% block content %}
+    <div id="content-area" class="flex-1 p-4 lg:p-8 gradient-bg font-inter">
+
+        <!-- Header & Create Button -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-diagram-project text-shipzoid-teal"></i> Subcategories
+            </h2>
+            {% if request_user|has_permission:"subcategory_add" %}
+            <button onclick="openCreateModal()" 
+                class="flex items-center gap-2 bg-shipzoid-teal hover:bg-shipzoid-navy text-white px-5 py-2.5 rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-shipzoid-teal/40">
+                <i class="fa-solid fa-plus"></i> Create Subcategory
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- DataTable Container -->
+        <div class="overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-lg transition hover:shadow-xl p-4">
+            <table id="subcategoryTable" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">S.No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subcategory Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Create Modal -->
+    <div id="createModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+        <div class="bg-white w-full max-w-2xl p-8 rounded-xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 modal-content">
+            <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 text-shipzoid-teal">
+                <i class="fa-solid fa-plus-circle"></i> Create Subcategory
+            </h3>
+            <form id="addsubcategoryForm" method="post" class="space-y-5">
+                {% csrf_token %}
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Category Name</label>
+                    <select required name="category_id"  class="search-select w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        <option></option> <!-- Empty for placeholder -->
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    
+                </div>
+
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Subcategory Name</label>
+                    <input type="text" name="name"
+                        class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" 
+                        required>
+                </div>
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Status</label>
+                    <select name="status" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeCreateModal()" 
+                        class="px-5 py-2 border rounded-lg hover:bg-slate-100 transition">Cancel</button>
+                    <button type="submit" id="addSubCategoryBtn"
+                        class="flex items-center justify-center gap-2 px-5 py-2 bg-shipzoid-teal text-white rounded-lg shadow-lg
+                            hover:bg-shipzoid-navy transform hover:scale-105 transition
+                            focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/50
+                            disabled:opacity-50 disabled:cursor-not-allowed">
+                    
+                    <!-- Spinner SVG - hidden by default -->
+                    <svg id="btnSpinner" class="w-5 h-5 text-white animate-spin hidden" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    
+                    <!-- Button text -->
+                    <span id="btnText" class="select-none">Save</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+        <div class="bg-white w-full max-w-2xl p-8 rounded-xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 modal-content">
+            <h3 class="text-2xl font-bold mb-6 flex items-center gap-2 text-shipzoid-teal">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Subcategory
+            </h3>
+            <form id="editsubcategoryForm" method="post" class="space-y-5">
+                {% csrf_token %}
+                 <input type="hidden" id="editId" name="id">
+
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Category Name</label>
+                    <select required name="category_id" id="category_id" class="search-select w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        <option></option> <!-- Empty for placeholder -->
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Subcategory Name</label>
+                    <input type="text" id="editName" name="name"
+                        class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" 
+                        required>
+                </div>
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Status</label>
+                    <select id="editStatus" name="status"
+                        class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeEditModal()" 
+                        class="px-5 py-2 border rounded-lg hover:bg-slate-100 transition">Cancel</button>
+                    <button type="submit" 
+                        class="px-5 py-2 bg-shipzoid-teal text-white rounded-lg shadow-lg hover:bg-shipzoid-navy transform hover:scale-105 transition">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<!-- DataTable & Modal Script -->
+<script>
+        $(document).ready(function () {
+            const table = $('#subcategoryTable').DataTable({
+                ajax: {
+                    url: "{% url 'adminpanel:get_subcategories' %}", // Django URL pattern name
+                    type: 'GET',
+                    dataSrc: 'data' // The key in the JSON that contains the array
+                },
+                columns: [
+                    {
+                        data: null,
+                        className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1 + meta.settings._iDisplayStart; // serial number (1-based)
+                        }
+                    },
+                     { 
+                            data: 'category.name',  // ✅ category name from nested object
+                            className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700' 
+                    },
+                    { data: 'name', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700' },
+                    { 
+                        data: 'status', 
+                        className: 'px-6 py-4 whitespace-nowrap text-sm',
+                        render: function (data) {
+                            return data == 1
+                                ? '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>'
+                                : '<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>';
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'px-6 py-4 whitespace-nowrap text-sm',
+                        render: function (data, type, row) {
+                        let buttons = ``;
+
+                        {% if request_user|has_permission:"subcategory_edit" %}
+                        buttons += `
+                            <button onclick="openEditModal(${row.id}, '${row.name}', '${row.status}')" 
+                                class="text-shipzoid-teal hover:text-shipzoid-teal mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        `;
+                        {% endif %}
+
+                        {% if request_user|has_permission:"subcategory_delete" %}
+                        buttons += `
+                            <button onclick="deleteSubcategory(${row.id})" 
+                                class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        `;
+                        {% endif %}
+
+                        // Show "No Access" if user has neither permission
+                        if (!buttons.trim()) {
+                            buttons = `
+                                <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-semibold">
+                                    <i class="fas fa-lock mr-1"></i> No Access
+                                </span>
+                            `;
+                        }
+
+                        return buttons;
+
+                        }
+                    }
+                ],
+                responsive: true,
+                paging: true,
+                searching: true,
+                ordering: false,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    loadingRecords: `
+                        <div class="flex flex-col items-center justify-center py-6">
+                            <div class="w-8 h-8 border-4 border-shipzoid-teal border-t-transparent rounded-full animate-spin"></div>
+                            <span class="mt-2 text-gray-600 text-sm">Loading data...</span>
+                        </div>
+                    `,
+                        emptyTable: `
+                        <div class="flex flex-col items-center justify-center py-6 text-center text-gray-900 dark:text-gray-100">
+                            <p class="text-lg font-semibold">No subcategories found</p>
+                        </div>
+                    `
+
+      
+                },
+                initComplete: function () {
+                    $('#subcategoryTable_filter input')
+                        .addClass('border border-shipzoid-teal rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/40')
+                        .attr('placeholder', 'Search...');
+                    $('#subcategoryTable_length select')
+                        .addClass('border border-shipzoid-teal rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/40');
+                    $('#subcategoryTable_paginate').addClass('mt-3');
+                    $('#subcategoryTable_paginate .paginate_button')
+                        .addClass('border border-gray-300 rounded-md px-3 py-1 mx-1 text-sm text-gray-700 hover:bg-blue-100');
+                }
+            });
+        });
+
+
+
+        function openCreateModal() {
+            const modal = document.getElementById('createModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        function closeCreateModal() {
+            const modal = document.getElementById('createModal');
+            modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
+        function openEditModal(id, name, status , category) {
+            document.getElementById('editId').value = id;  // store ID
+            document.getElementById('editName').value = name;
+            document.getElementById('editStatus').value = status;
+            document.getElementById('category_id').value = category;
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
+
+
+    $(document).ready(function () {
+        $("#addsubcategoryForm").on("submit", function (e) {
+            e.preventDefault();
+
+
+        $("#addSubCategoryBtn").attr("disabled", true);
+        $("#btnText").text("Saving...");
+        $("#btnSpinner").removeClass("hidden");
+
+
+            $.ajax({
+                url: "{% url 'adminpanel:add_subcategory' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Subcategory Added!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500,
+                        background: '#F0FDF4',
+                        color: '#065F46'
+                    });
+                    setTimeout(function () {
+                    location.reload(); // Reload page after showing message
+                }, 1500);
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: xhr.responseJSON?.error || 'Something went wrong!',
+                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#DC2626',
+                        background: '#FEF2F2',
+                        color: '#991B1B'
+                    });
+                } ,
+                complete: function () {
+                // Always re-enable button and reset spinner/text after request finishes
+                $("#addSubCategoryBtn").attr("disabled", false);
+                $("#btnText").text("Save");
+                $("#btnSpinner").addClass("hidden");
+            }
+            });
+        });
+    });
+
+    $(document).ready(function () {
+        $("#editsubcategoryForm").on("submit", function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we edit your subcategory',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: "{% url 'adminpanel:edit_subcategory' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Subcategory Updated!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500,
+                        background: '#F0FDF4',
+                        color: '#065F46'
+                    });
+                    setTimeout(function () {
+                    location.reload(); // Reload page after showing message
+                }, 1500);
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: xhr.responseJSON?.error || 'Something went wrong!',
+                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#DC2626',
+                        background: '#FEF2F2',
+                        color: '#991B1B'
+                    });
+                }
+            });
+        });
+    });
+
+
+    function deleteCategory(id) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will permanently delete the subcategory.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#DC2626',  // Tailwind red-600
+            cancelButtonColor: '#2563EB',   // Tailwind blue-600
+            background: '#FEF2F2',           // Tailwind red-50 background
+            color: '#991B1B',                // Tailwind red-800 text color
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{% url 'adminpanel:delete_subcategory' 0 %}`.replace('0', id), {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.error,
+                            confirmButtonText: 'Try Again',
+                            confirmButtonColor: '#DC2626',
+                            background: '#FEF2F2',
+                            color: '#991B1B'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: data.message,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#16A34A',  // Tailwind green-600
+                            background: '#DCFCE7',           // Tailwind green-50 background
+                            color: '#166534'                // Tailwind green-800 text
+                        });
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong.',
+                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#DC2626',
+                        background: '#FEF2F2',
+                        color: '#991B1B'
+                    });
+                });
+            }
+        });
+    }
+        $(document).ready(function() {
+            // Apply to all dropdowns with 'search-select' class globally
+            $('.search-select').select2({
+                placeholder: "Select an option",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+
+</script>
+
+{% endblock %}
+

@@ -1,0 +1,321 @@
+{% extends 'adminpanel/layouts/base.html' %}
+{% block content %}
+{% load tz %}
+
+<div id="content-area" class="flex-1 p-4 lg:p-8 gradient-bg font-inter">
+  <section id="order-detail-section" class="animate-fadeIn">
+
+    <!-- Back button -->
+    <div class="flex items-center justify-between mb-4 no-print">
+      <a href="{% url 'adminpanel:orders' status %}" 
+         class="px-3 py-2 rounded-lg border border-blue-500 bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200 flex items-center">
+        <i class="fa-solid fa-arrow-left mr-2"></i>Back to Orders
+      </a>
+    </div>
+    
+
+    <!-- Order header -->
+    <div class="bg-white border rounded-xl shadow-sm p-6 mb-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h3 class="text-xl font-bold">Order #{{ order.order_number }}</h3>
+          <p class="text-sm text-gray-600">{{ order.created_at|timezone:"Asia/Kolkata"|date:"d M Y, h:i A" }}</p>
+        </div>
+        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border
+                     {% if order.customer_status == 'confirmed' %}bg-green-100 text-green-700
+                     {% elif order.customer_status == 'inprogress' %}bg-yellow-100 text-yellow-700
+                     {% elif order.customer_status == 'delivered' %}bg-blue-100 text-blue-700
+                     {% else %}bg-gray-100 text-gray-700{% endif %}">
+          {{ order.customer_status|capfirst }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Delivery Assignment Section -->
+      <div class="bg-white border rounded-xl shadow-sm p-6 mb-6">
+        <h4 class="font-semibold mb-4 flex items-center gap-2">
+          <i class="fas fa-truck text-shipzoid-teal"></i> Delivery Assignment
+        </h4>
+
+        {% if order.customer_status == "confirmed" %}
+          <!-- Show dropdown to assign -->
+        <form id="assignDeliveryForm" method="post" class="space-y-4">
+          {% csrf_token %}
+          <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+            <!-- Select -->
+             <input type="hidden" name="order_id" value="{{ order.id }}">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Select Delivery Man</label>
+              <select name="delivery_man_id"
+                class="search-select w-full border rounded-lg px-3 py-2 focus:ring-shipzoid-teal focus:border-shipzoid-teal" required>
+                <option value="">-- Choose Delivery Man --</option>
+                  {% for dman in delivery_men %}
+                    <option value="{{ dman.id }}">{{ dman.first_name }} {{ dman.last_name }}</option>
+                  {% endfor %}
+              </select>
+            </div>
+
+            <!-- Button -->
+            <div class="mt-3 sm:mt-6">
+              <button type="submit"
+                class="w-full sm:w-auto px-4 py-2 bg-shipzoid-teal text-white rounded-lg hover:bg-teal-700 transition">
+                Assign Delivery Man
+              </button>
+            </div>
+          </div>
+        </form>
+
+
+        {% elif order.customer_status == "inprogress" %}
+          <!-- Show delivery man details -->
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+              {% if order.delivery_man and order.delivery_man.image %}
+                <img src="{{ order.delivery_man.image.url }}" alt="{{ order.delivery_man.first_name }}" class="w-full h-full object-cover">
+              {% else %}
+                <i class="fas fa-user text-gray-400 text-xl sm:text-2xl"></i>
+              {% endif %}
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800">Name    : {{ order.delivery_man.first_name }} {{ order.delivery_man.last_name }}</p>
+              <p class="text-sm text-gray-600">Mobile Number : {{ order.delivery_man.phone }}</p>
+              <p class="text-sm text-gray-600">Email ID : {{ order.delivery_man.email }}</p>
+            </div>
+          </div>
+
+            {% elif order.customer_status == "delivered" %}
+            <!-- Completed / Delivered Section -->
+            <div class="flex items-center justify-between flex-wrap gap-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  {% if order.delivery_man and order.delivery_man.image %}
+                    <img src="{{ order.delivery_man.image.url }}" alt="{{ order.delivery_man.first_name }}" class="w-full h-full object-cover">
+                  {% else %}
+                    <i class="fas fa-user-check text-green-500 text-xl sm:text-2xl"></i>
+                  {% endif %}
+                </div>
+                <div class="flex flex-col">
+                  <p class="font-semibold text-gray-800">Delivered By: {{ order.delivery_man.first_name }} {{ order.delivery_man.last_name }}</p>
+                  <p class="text-sm text-gray-600">Mobile: {{ order.delivery_man.phone }}</p>
+                  <p class="text-sm text-gray-600">Email: {{ order.delivery_man.email }}</p>
+                  {% if order.placed_at %}
+                    <p class="text-sm text-gray-600">
+                        Placed At: {{ order.placed_at|timezone:"Asia/Kolkata"|date:"d M Y, h:i A" }}
+                    </p>
+                  {% endif %}
+
+                  {% if order.delivered_at %}
+                      <p class="text-sm text-gray-600">
+                          Delivered At: {{ order.delivered_at|timezone:"Asia/Kolkata"|date:"d M Y, h:i A" }}
+                      </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 text-green-600 font-semibold text-sm sm:text-base">
+                <i class="fas fa-check-circle"></i>
+                <span>Delivery Completed</span>
+              </div>
+            </div>
+
+        {% else %}
+          <p class="text-sm text-gray-500">No delivery assignment available for this status.</p>
+        {% endif %}
+      </div>
+
+    <!-- Summary grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <!-- Customer -->
+      <div class="bg-white border rounded-xl shadow-sm p-6">
+        <h4 class="font-semibold mb-4">Customer</h4>
+        <div class="space-y-1 text-sm">
+        <p>
+            <span class="text-gray-600">Name:</span> 
+            <span class="font-medium">
+            {% if customer %}{{ customer.full_name }}{% else %}N/A{% endif %}
+            </span>
+        </p>
+        <p>
+            <span class="text-gray-600">Email:</span> 
+            <span class="font-medium">
+            {% if customer %}{{ customer.email }}{% else %}N/A{% endif %}
+            </span>
+        </p>
+        <p>
+            <span class="text-gray-600">Phone:</span> 
+            <span class="font-medium">
+            {% if customer %}{{ customer.phone_number }}{% else %}N/A{% endif %}
+            </span>
+        </p>
+        </div>
+
+      </div>
+
+      <!-- Shipping -->
+      <div class="bg-white border rounded-xl shadow-sm p-6">
+        <h4 class="font-semibold mb-4">Shipping Address</h4>
+        <div class="text-sm">
+          {% if shipping_address %}
+            {{ shipping_address.full_name }}<br>
+            {{ shipping_address.address }}<br>
+            {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.pincode }}<br>
+          {% else %} N/A {% endif %}
+        </div>
+      </div>
+
+      <!-- Billing -->
+      <div class="bg-white border rounded-xl shadow-sm p-6">
+        <h4 class="font-semibold mb-4">Billing Address</h4>
+        <div class="text-sm">
+            123 Business Ave, Suite 100<br>
+            New York, NY 10001, Phone: (555) 123-4567 | Email: support@shipzoid.com<br>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="bg-white border rounded-xl shadow-sm mb-6">
+      <div class="p-6 border-b"><h4 class="font-semibold">Items</h4></div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="text-left p-4 text-sm font-medium text-gray-600">Product</th>
+              <th class="text-center p-4 text-sm font-medium text-gray-600">Qty</th>
+              <th class="text-right p-4 text-sm font-medium text-gray-600">Price</th>
+               <th class="text-right p-4 text-sm font-medium text-gray-600">Tax Amount</th>
+              <th class="text-right p-4 text-sm font-medium text-gray-600">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for item in items %}
+            <tr>
+              <td class="p-4 flex items-center gap-2">
+                {% if item.image %}
+                <img src="{{ item.image }}" alt="{{ item.product_name }}" class="w-10 h-10 object-cover rounded"/>
+                {% endif %}
+                {{ item.product_name }}
+              </td>
+              <td class="text-center p-4">{{ item.quantity }}</td>
+              <td class="text-right p-4">₹{{ item.final_price }}</td>
+              <td class="text-right p-4">₹{{ item.tax_amount }}(%{{item.tax_rate}})</td>
+              <td class="text-right p-4">₹{{ item.total_price }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Payment and totals -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="bg-white border rounded-xl shadow-sm p-6 lg:col-span-2">
+        <h4 class="font-semibold mb-4">Payment</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <p><span class="text-gray-600">Method:</span> <span class="font-medium">{{ payment_method }}</span></p>
+         <p>
+            <span class="text-gray-600">Status:</span> 
+            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                        {% if payment_status|lower == 'pending' %}bg-yellow-100 text-yellow-700
+                        {% elif payment_status|lower == 'completed' %}bg-green-100 text-green-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                {{ payment_status }}
+            </span>
+            </p>
+        </div>
+      </div>
+
+      <div class="bg-white border rounded-xl shadow-sm p-6">
+        <h4 class="font-semibold mb-4">Summary</h4>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between"><span class="text-gray-600">Subtotal</span><span>₹{{ subtotal }}</span></div>
+          <div class="flex justify-between"><span class="text-gray-600">Tax</span><span>₹{{ total_tax }}</span></div>
+          {% if order.discount %}
+          <div class="flex justify-between text-green-600"><span>Discount</span><span>₹{{ order.discount }}</span></div>
+          {% endif %}
+          <div class="border-t pt-2 mt-2"></div>
+          <div class="flex justify-between text-lg font-semibold"><span>Total</span><span class="text-shipzoid-teal">₹{{ grand_total }}</span></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<script>
+    $(document).ready(function() {
+            // Apply to all dropdowns with 'search-select' class globally
+            $('.search-select').select2({
+                placeholder: "-- Choose Delivery Man --",
+                allowClear: false,
+                width: '100%'
+            });
+        });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("assignDeliveryForm");
+
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(form);
+
+            fetch("{% url 'adminpanel:assign_delivery_man' %}", {  
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Delivery Man Assigned 🎉",
+                        text: "Order has been moved to In-Progress.",
+                        showConfirmButton: false,
+                        timer: 1500,  // swal closes in 1.5s
+                        toast: true,
+                        customClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        }
+                    });
+
+                    // Reload page after 1.5 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+
+                } else {
+                    Swal.fire({
+                        position: "top-end",
+                        icon: "error",
+                        title: "Failed!",
+                        text: data.message || "Something went wrong.",
+                        showConfirmButton: false,
+                        timer: 2000,
+                        toast: true,
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                Swal.fire({
+                    position: "top-end",
+                    icon: "error",
+                    title: "Error",
+                    text: "Network issue occurred.",
+                    showConfirmButton: false,
+                    timer: 2000,
+                    toast: true,
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}
+

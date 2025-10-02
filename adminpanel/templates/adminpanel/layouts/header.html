@@ -1,0 +1,68 @@
+
+            <!-- Top Header -->
+            <header class="bg-white/90 backdrop-blur-3xl px-4 lg:px-8 py-4 border-b border-slate-200 shadow-sm flex justify-between items-center sticky top-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-all duration-300">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <div class="flex items-center gap-2 text-sm text-slate-600">
+                        <span>Shipzoid</span>
+                        <span>/</span>
+                        <span id="breadcrumb-current" class="text-slate-800 font-semibold">{{ heading }}</span>
+                    </div>
+                </div>
+
+                {% comment %} <div class="hidden sm:flex flex-1 max-w-md mx-8">
+                    <div class="relative w-full transition-all duration-300 focus-within:scale-105">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 transition-colors duration-300"></i>
+                        <input type="text" id="main-search" placeholder="Search shipments, orders, customers..." 
+                               class="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-shipzoid-teal focus:ring-4 focus:ring-shipzoid-teal/10 transition-all duration-300">
+                    </div>
+                </div> {% endcomment %}
+
+                <div class="flex items-center gap-3">
+                    {% comment %} <button class="p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-all duration-300 relative">
+                        <i class="fas fa-bell"></i>
+                        <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    </button>
+                    <button class="p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-all duration-300">
+                        <i class="fas fa-cog"></i>
+                    </button> {% endcomment %}
+                    
+                        <div class="relative">
+                        <!-- Hidden toggle for mobile -->
+                        <input type="checkbox" id="user-menu-toggle" class="peer hidden" />
+
+                        <!-- User button -->
+                        <label for="user-menu-toggle" class="flex items-center gap-3 p-2 bg-white border border-slate-200 rounded-xl cursor-pointer transition-all duration-300 hover:bg-slate-50 hover:border-shipzoid-teal">
+                            <div class="w-8 h-8 teal-gradient rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                {{ request.session.user.name|slice:":1" }}
+                            </div>
+                            <div class="hidden sm:block">
+                                <div class="font-semibold text-slate-800 text-sm">{{ request.session.user.name }}</div>
+                                <div class="text-xs text-slate-600">{{ request.session.user.role_name }}</div>
+                            </div>
+                        </label>
+
+                        <!-- Dropdown menu -->
+                        <div class="absolute right-0 mt-2 w-44 origin-top-right rounded-md bg-white border border-slate-200 shadow-lg
+                                    opacity-0 invisible transition-all duration-200
+                                    group-hover:visible group-hover:opacity-100
+                                    peer-checked:visible peer-checked:opacity-100">
+                        <div class="py-1">
+                            <a href="javascript:void(0);" 
+                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user text-gray-700 w-4"></i>
+                                Account
+                            </a>
+                            <a href="{% url 'adminpanel:logout' %}" 
+                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt text-gray-700 w-4"></i>
+                                Logout
+                            </a>
+                        </div>
+                        </div>
+                    </div>
+
+                </div>
+            </header>

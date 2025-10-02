@@ -1,0 +1,507 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Shipzoid Store</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="icon" type="image/png" href="{% static 'adminpanel/images/brand/shipzoid.jpeg' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'shipzoid-teal': '#4ECDC4',
+                        'shipzoid-teal-light': '#7EDDD6',
+                        'shipzoid-teal-dark': '#3BB5AF',
+                        'shipzoid-navy': '#1e3a8a',
+                        'shipzoid-navy-light': '#3b82f6',
+                        'shipzoid-navy-dark': '#1e40af',
+                        'shipzoid-navy-darker': '#1e293b',
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+                    },
+                    animation: {
+                        'fadeIn': 'fadeIn 0.6s ease-out',
+                        'slideIn': 'slideIn 0.8s ease-out',
+                        'slideUp': 'slideUp 0.6s ease-out',
+                        'scaleIn': 'scaleIn 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            'from': { opacity: '0', transform: 'translateY(20px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideIn: {
+                            'from': { opacity: '0', transform: 'translateX(-30px)' },
+                            'to': { opacity: '1', transform: 'translateX(0)' }
+                        },
+                        slideUp: {
+                            'from': { opacity: '0', transform: 'translateY(30px)' },
+                            'to': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        scaleIn: {
+                            'from': { opacity: '0', transform: 'scale(0.9)' },
+                            'to': { opacity: '1', transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(226, 232, 240, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4ECDC4;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3BB5AF;
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            border: 3px solid rgba(78, 205, 196, 0.3);
+            border-top: 3px solid #4ECDC4;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Card input styling */
+        .card-input {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+        }
+
+        /* Step indicator */
+        .step-completed {
+            background: linear-gradient(135deg, #4ECDC4, #3BB5AF);
+            color: white;
+        }
+        
+        .step-active {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+        }
+        
+        .step-pending {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+
+        /* Form validation styles */
+        .input-error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
+        .input-success {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-900">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-shipzoid-teal to-shipzoid-teal-dark rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent">Shipzoid Store</h1>
+                        <p class="text-xs text-gray-500">Secure Checkout</p>
+                    </div>
+                </div>
+
+                <!-- Security Badge -->
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <i class="fas fa-shield-alt text-green-500"></i>
+                    <span class="hidden sm:inline">Secure Checkout</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Checkout Form -->
+            <div class="lg:col-span-8">
+                <form id="checkout-form" class="space-y-8">
+                    <!-- Contact Information -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-900">Contact Information</h2>
+                            <i class="fas fa-user text-shipzoid-teal"></i>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                <input type="text" id="fullName" value="{{ customer.full_name }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-transparent transition-all duration-200"
+                                       placeholder="Enter your first name" required>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                <input type="email" id="email"  value="{{ customer.email|default:'' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-transparent transition-all duration-200"
+                                       placeholder="Enter your email address" required>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                <input type="tel" id="phone" value="{{ customer.phone_number }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-transparent transition-all duration-200"
+                                       placeholder="Enter your phone number" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-900">Shipping Address</h2>
+                            <i class="fas fa-shipping-fast text-shipzoid-teal"></i>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                <input type="text" id="address" value="{{ customer.address|default:'' }}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-transparent transition-all duration-200"
+                                       placeholder="Enter your address">
+                            </div>
+
+                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                                    <input type="text" id="city" value="{{ customer.city|default:'' }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-transparent transition-all duration-200"
+                                           placeholder="City">
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">State</label>
+                                    <select id="state" name="state"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-transparent transition-all duration-200">
+                                    <option value="">Select State</option>
+                                    <option value="Andhra Pradesh" {% if customer.state == "Andhra Pradesh" %}selected{% endif %}>Andhra Pradesh</option>
+                                    <option value="Arunachal Pradesh" {% if customer.state == "Arunachal Pradesh" %}selected{% endif %}>Arunachal Pradesh</option>
+                                    <option value="Assam" {% if customer.state == "Assam" %}selected{% endif %}>Assam</option>
+                                    <option value="Bihar" {% if customer.state == "Bihar" %}selected{% endif %}>Bihar</option>
+                                    <option value="Chhattisgarh" {% if customer.state == "Chhattisgarh" %}selected{% endif %}>Chhattisgarh</option>
+                                    <option value="Goa" {% if customer.state == "Goa" %}selected{% endif %}>Goa</option>
+                                    <option value="Gujarat" {% if customer.state == "Gujarat" %}selected{% endif %}>Gujarat</option>
+                                    <option value="Haryana" {% if customer.state == "Haryana" %}selected{% endif %}>Haryana</option>
+                                    <option value="Himachal Pradesh" {% if customer.state == "Himachal Pradesh" %}selected{% endif %}>Himachal Pradesh</option>
+                                    <option value="Jharkhand" {% if customer.state == "Jharkhand" %}selected{% endif %}>Jharkhand</option>
+                                    <option value="Karnataka" {% if customer.state == "Karnataka" %}selected{% endif %}>Karnataka</option>
+                                    <option value="Kerala" {% if customer.state == "Kerala" %}selected{% endif %}>Kerala</option>
+                                    <option value="Madhya Pradesh" {% if customer.state == "Madhya Pradesh" %}selected{% endif %}>Madhya Pradesh</option>
+                                    <option value="Maharashtra" {% if customer.state == "Maharashtra" %}selected{% endif %}>Maharashtra</option>
+                                    <option value="Manipur" {% if customer.state == "Manipur" %}selected{% endif %}>Manipur</option>
+                                    <option value="Meghalaya" {% if customer.state == "Meghalaya" %}selected{% endif %}>Meghalaya</option>
+                                    <option value="Mizoram" {% if customer.state == "Mizoram" %}selected{% endif %}>Mizoram</option>
+                                    <option value="Nagaland" {% if customer.state == "Nagaland" %}selected{% endif %}>Nagaland</option>
+                                    <option value="Odisha" {% if customer.state == "Odisha" %}selected{% endif %}>Odisha</option>
+                                    <option value="Punjab" {% if customer.state == "Punjab" %}selected{% endif %}>Punjab</option>
+                                    <option value="Rajasthan" {% if customer.state == "Rajasthan" %}selected{% endif %}>Rajasthan</option>
+                                    <option value="Sikkim" {% if customer.state == "Sikkim" %}selected{% endif %}>Sikkim</option>
+                                    <option value="Tamil Nadu" {% if customer.state == "Tamil Nadu" %}selected{% endif %}>Tamil Nadu</option>
+                                    <option value="Telangana" {% if customer.state == "Telangana" %}selected{% endif %}>Telangana</option>
+                                    <option value="Tripura" {% if customer.state == "Tripura" %}selected{% endif %}>Tripura</option>
+                                    <option value="Uttar Pradesh" {% if customer.state == "Uttar Pradesh" %}selected{% endif %}>Uttar Pradesh</option>
+                                    <option value="Uttarakhand" {% if customer.state == "Uttarakhand" %}selected{% endif %}>Uttarakhand</option>
+                                    <option value="West Bengal" {% if customer.state == "West Bengal" %}selected{% endif %}>West Bengal</option>
+                                    <option value="Andaman and Nicobar Islands" {% if customer.state == "Andaman and Nicobar Islands" %}selected{% endif %}>Andaman and Nicobar Islands</option>
+                                    <option value="Chandigarh" {% if customer.state == "Chandigarh" %}selected{% endif %}>Chandigarh</option>
+                                    <option value="Dadra and Nagar Haveli and Daman and Diu" {% if customer.state == "Dadra and Nagar Haveli and Daman and Diu" %}selected{% endif %}>Dadra and Nagar Haveli and Daman and Diu</option>
+                                    <option value="Delhi" {% if customer.state == "Delhi" %}selected{% endif %}>Delhi</option>
+                                    <option value="Jammu and Kashmir" {% if customer.state == "Jammu and Kashmir" %}selected{% endif %}>Jammu and Kashmir</option>
+                                    <option value="Ladakh" {% if customer.state == "Ladakh" %}selected{% endif %}>Ladakh</option>
+                                    <option value="Lakshadweep" {% if customer.state == "Lakshadweep" %}selected{% endif %}>Lakshadweep</option>
+                                    <option value="Puducherry" {% if customer.state == "Puducherry" %}selected{% endif %}>Puducherry</option>
+                                </select>
+
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Pin Code</label>
+                                    <input type="text" id="pinCode" oninput="ValidatePincode()" value="{{ customer.pincode|default:'' }}"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shipzoid-teal focus:border-transparent transition-all duration-200"
+                                           placeholder="PIN Code">
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                    </div>
+
+
+                    <!-- Payment Information -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-xl font-bold text-gray-900">Payment Method</h2>
+                            <i class="fas fa-money-bill-wave text-shipzoid-teal text-2xl"></i>
+                        </div>
+
+                        <!-- Cash on Delivery Option -->
+                        <div class="p-6 border-2 border-shipzoid-teal bg-shipzoid-teal/5 rounded-lg">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-shipzoid-teal rounded-full flex items-center justify-center text-white">
+                                    <i class="fas fa-hand-holding-usd text-xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Cash on Delivery (COD)</h3>
+                                    <p class="text-gray-600 text-sm mb-3">Pay with cash when your order is delivered to your doorstep</p>
+
+                                    <!-- COD Features -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-700">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-check-circle text-green-500"></i>
+                                            <span>No advance payment needed</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-check-circle text-green-500"></i>
+                                            <span>Inspect before payment</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-check-circle text-green-500"></i>
+                                            <span>Secure and convenient</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-check-circle text-green-500"></i>
+                                            <span>Available in all areas</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- COD Notice -->
+                            <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-info-circle text-amber-600 mt-0.5"></i>
+                                    <div class="text-sm">
+                                        <p class="font-medium text-amber-800 mb-1">Important Note:</p>
+                                        <ul class="text-amber-700 space-y-1">
+                                            <li>• Please keep exact change ready for faster delivery</li>
+                                            <li>• COD charges: ₹20 for orders below ₹500</li>
+                                            <li>• Delivery person will verify your identity</li>
+                                            <li>• Orders will be cancelled if not accepted within 3 delivery attempts</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-24">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+                    
+                    <!-- Order Items -->
+                    <div class="space-y-4 mb-6">
+                        {% for item in cart_items %}
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <img src="{{item.image}}" alt="Product" class="w-16 h-16 object-cover rounded-lg">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-900">{{item.name}}</h4>
+                                <p class="text-sm text-gray-600">
+                                    {% if item.size %}
+                                        Size: {{ item.size }} |
+                                    {% endif %}
+                                    Price: {{ item.price }}
+                                </p>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-sm text-gray-600">Qty: {{item.quantity}}</span>
+                                    <span class="font-semibold text-gray-900">₹{{item.total_price|default:'0'}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    
+                    </div>
+                    
+                    
+                    <!-- Order Totals -->
+                    <div class="space-y-3 pt-6 border-t border-gray-200">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="font-medium text-gray-900" id="subtotal">₹{{cart_subtotal}}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tax</span>
+                            <span class="font-medium text-gray-900" id="tax">₹{{cart_tax_total}}</span>
+                        </div>
+                        <div class="flex justify-between pt-3 border-t border-gray-200">
+                            <span class="text-lg font-bold text-gray-900">Total</span>
+                            <span class="text-lg font-bold text-gray-900" id="total">₹{{cart_total|default:'0'}}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Place Order Button -->
+                    <button type="submit" form="checkout-form" id="place-order-btn"
+                            class="w-full mt-6 bg-shipzoid-teal text-white py-4 rounded-xl font-semibold text-lg hover:bg-shipzoid-teal-dark transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <span id="button-text">Place Order - Cash on Delivery</span>
+                        <div id="button-loading" class="loading-spinner hidden inline-block ml-2"></div>
+                    </button>
+                    
+                  <!-- Home Button -->
+                    <button type="button" onclick="window.location.href='{% url 'ecommerce:home'%}'"
+                        class="w-full mt-6 bg-blue-500 text-white py-4 rounded-xl font-semibold text-lg 
+                            hover:bg-blue-600 focus:ring-4 focus:ring-blue-300 
+                            transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <span id="button-text">Back Home</span>
+                    </button>
+
+                    
+                    <!-- Money Back Guarantee -->
+                    <div class="mt-4 text-center">
+                        <div class="flex items-center justify-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-undo text-shipzoid-teal"></i>
+                            <span>30-day money-back guarantee</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <div id="page-loader" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+            <div class="flex flex-col items-center space-y-4">
+                <!-- Spinner -->
+                <div class="w-16 h-16 border-4 border-shipzoid-teal border-t-transparent rounded-full animate-spin"></div>
+                
+                <!-- Loading Text -->
+                <p class="text-shipzoid-teal text-lg font-semibold animate-pulse">Loading...</p>
+            </div>
+        </div>
+
+</body>
+</html>
+
+<script src="{% static 'adminpanel/js/jquery-3.6.4.min.js' %}"></script>
+
+
+<script>
+$("#checkout-form").on("submit", function (e) {
+    e.preventDefault();
+
+    // Collect form data
+    const orderData = {
+        full_name: $("#fullName").val().trim(),
+        email: $("#email").val().trim(),
+        phone: $("#phone").val().trim(),
+        address: $("#address").val().trim(),
+        city: $("#city").val().trim(),
+        state: $("#state").val().trim(),
+        pin_code: $("#pinCode").val().trim(),
+        subtotal: $("#subtotal").text().replace("₹", "").trim(),
+        tax: $("#tax").text().replace("₹", "").trim(),
+        total: $("#total").text().replace("₹", "").trim(),
+        payment_method: "COD",
+        csrfmiddlewaretoken: "{{ csrf_token }}"
+    };
+
+    // Client-side validation
+    for (const key in orderData) {
+        if (!orderData[key] && key !== "payment_method" && key !== "csrfmiddlewaretoken") {
+            Swal.fire({
+                icon: "warning",
+                title: "Validation Error",
+                text: `${key.replace("_", " ")} is required!`,
+                customClass: {
+                    popup: "rounded-2xl shadow-lg p-4 bg-white"
+                },
+                confirmButtonColor: "#10B981",
+                confirmButtonText: "Okay"
+            });
+            return;
+        }
+    }
+
+    // Disable button to prevent multiple submissions
+    $("#place-order-btn").prop("disabled", true).text("Placing Order...");
+
+    $.ajax({
+        url: "{% url 'ecommerce:create_order' %}",
+        type: "POST",
+        data: orderData,
+        success: function (response) {
+            Swal.fire({
+                icon: "success",
+                title: "Order Placed!",
+                text: "Redirecting to your order summary...",
+                showConfirmButton: false,
+                timer: 2000,
+                customClass: {
+                    popup: "rounded-2xl shadow-lg p-4 bg-white"
+                }
+            });
+            setTimeout(() => {
+                window.location.href = response.redirect_url;
+            }, 2000);
+        },
+        error: function (xhr) {
+            let errorMsg = "Failed to place the order. Please try again.";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMsg = xhr.responseJSON.message;
+            }
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: errorMsg,
+                confirmButtonColor: "#EF4444",
+                confirmButtonText: "Try Again"
+            });
+            $("#place-order-btn").prop("disabled", false).text("Place Order - Cash on Delivery");
+        }
+    });
+});
+
+function ValidatePincode() {
+    let input = document.getElementById("pinCode");
+    input.value = input.value.replace(/[^0-9]/g, '').slice(0,6);
+}
+
+        window.addEventListener("load", function () {
+            const loader = document.getElementById("page-loader");
+            if (loader) {
+            loader.classList.add("opacity-0", "pointer-events-none");
+            setTimeout(() => loader.remove(), 500); // Remove from DOM after fade
+            }
+        });
+</script>

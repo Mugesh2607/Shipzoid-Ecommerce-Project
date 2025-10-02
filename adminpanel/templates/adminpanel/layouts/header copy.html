@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipzoid</title>
+     <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="icon" type="image/png" href="{% static 'adminpanel/images/brand/shipzoid.jpeg' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.13.5/css/dataTables.tailwindcss.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{% static 'adminpanel/js/jquery-3.6.4.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+    <script src="{% static 'adminpanel/js/dataTables.tailwindcss.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'adminpanel/css/style.css' %}">
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
+    <style>
+        /* Make Select2 container fill the full height */
+        .select2-container .select2-selection--single {
+            height: 100% !important;
+            padding: 0.5rem 1rem !important;  /* matches your px-4 py-2 padding */
+            border-radius: 0.5rem !important; /* matches rounded-lg */
+            border: 1px solid #94a3b8 !important; /* Tailwind slate-300 border color */
+            outline: none !important;
+            box-sizing: border-box;
+        }
+
+        /* Vertically center the selected text */
+        .select2-container .select2-selection__rendered {
+            line-height: 1.5rem !important; /* approx your text size line height */
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        /* Remove default Select2 arrow height constraint */
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 100% !important;
+        }
+
+        /* On focus styles (matches your focus:ring-2 focus:ring-shipzoid-teal/40) */
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #14b8a6 !important; /* Tailwind shipzoid-teal */
+            box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.25) !important; /* ring-shipzoid-teal/40 */
+        }
+    </style>
+</head>
+<body class="font-inter gradient-bg text-slate-800 leading-relaxed overflow-x-hidden">
+        <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/50 opacity-0 invisible transition-all duration-300"></div>

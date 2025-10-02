@@ -1,0 +1,67 @@
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(226, 232, 240, 0.3);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4ECDC4;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3BB5AF;
+        }
+
+        /* Animation delay classes */
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+
+        /* Custom gradient backgrounds */
+        .gradient-bg { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+        .sidebar-gradient { background: linear-gradient(180deg, #1e293b 0%, #1e3a8a 50%, #1e40af 100%); }
+        .teal-gradient { background: linear-gradient(135deg, #4ECDC4, #3BB5AF); }
+        .navy-gradient { background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+        .shimmer-bg { 
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            background-size: 200% 200%;
+        }
+        
+
+        /* Make table scrollable on small screens */
+        .dataTables_wrapper {
+            width: 100%;
+            overflow-x: auto;           /* allow horizontal scroll */
+            -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
+        }
+
+        /* Optional: hide scrollbar while keeping scrollable */
+        .dataTables_wrapper::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        .dataTables_wrapper {
+            -ms-overflow-style: none;  /* IE/Edge */
+            scrollbar-width: none;     /* Firefox */
+        }
+
+
+        /* Loading animation */
+        .loading-spinner {
+            border: 3px solid rgba(78, 205, 196, 0.3);
+            border-top: 3px solid #4ECDC4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        

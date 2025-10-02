@@ -1,0 +1,734 @@
+{% extends 'adminpanel/layouts/base.html' %}
+{% load static %}
+{% load permissions_tags %}  
+
+
+{% block content %}
+    <div id="content-area" class="flex-1 p-4 lg:p-8 gradient-bg font-inter">
+
+        <!-- Header & Create Button -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-users text-shipzoid-teal"></i> Users
+            </h2>
+            {% if request_user|has_permission:"user_delete" %}
+            <button onclick="openCreateModal()" 
+                class="flex items-center gap-2 bg-shipzoid-teal hover:bg-shipzoid-navy text-white px-5 py-2.5 rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-shipzoid-teal/40">
+                <i class="fa-solid fa-plus"></i> Create User
+            </button>
+            {% endif %}
+        </div>
+
+        <!-- DataTable Container -->
+        <div class="w-full overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-lg transition hover:shadow-xl p-4">
+            <table id="usersTable" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">S.No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">First Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone Number</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Create Product Modal -->
+    <div id="createModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+    <div class="bg-white w-full max-w-5xl p-8 rounded-xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 modal-content overflow-y-auto max-h-[95vh]">
+        
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold flex items-center gap-2 text-shipzoid-teal">
+                <i class="fa-solid fa-plus-circle"></i> Add User
+            </h3>
+            <button type="button" onclick="closecreateModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <form id="addUserForm" method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="flex flex-col items-center">
+            <!-- Preview Image -->
+            <div class="w-28 h-28 rounded-full overflow-hidden border-2 border-shipzoid-teal mb-3">
+                <img id="createPreview" src="{% static 'adminpanel/images/default_image/user.jpg' %}"
+                    alt="Profile Preview" class="w-full h-full object-cover">
+            </div>
+
+            <!-- Upload Button -->
+            <label class="cursor-pointer bg-shipzoid-teal hover:bg-shipzoid-navy text-white px-4 py-2 rounded-lg shadow-md transition">
+                <i class="fas fa-upload mr-2"></i> Upload Profile
+                <input type="file" name="profile_image" id="createImageInput" accept="image/*" class="hidden">
+            </label>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+            <label class="block mb-1 text-sm font-medium">First Name</label>
+            <input type="text" name="first_name" required placeholder="Enter Frist Name"
+                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+            </div>
+
+            <div>
+            <label class="block mb-1 text-sm font-medium">Last Name</label>
+            <input type="text" name="last_name" placeholder="Enter Last Name"
+                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+            </div>
+
+            <div>
+            <label class="block mb-1 text-sm font-medium">Email</label>
+             <input type="email" name="email" placeholder="Enter Email ID"
+                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+
+            <div>
+            <label class="block mb-1 text-sm font-medium">Address</label>
+                <input type="text" name="address" placeholder="Enter Address"
+                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+            </div>
+            
+            <div>
+            <label class="block mb-1 text-sm font-medium">Phone Number</label>
+                <input type="text" name="phone" placeholder="Enter Phone Number" oninput="ValidatePhoneNumber(this)"
+                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+            </div>
+
+            <div class="relative">
+                <label class="block mb-1 text-sm font-medium">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter Password"
+                    class="w-full border border-slate-300 rounded-lg px-4 py-2 pr-10 
+                            focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 
+                            outline-none transition">
+
+                <!-- Eye Icon -->
+                <button type="button" onclick="togglePassword()" 
+                        class="absolute right-3 top-9 text-slate-500 hover:text-slate-700">
+                    <i id="toggleIcon" class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+            <label class="block mb-1 text-sm font-medium">Role</label>
+                <select name="role"
+                    class="search-select w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                    <option value="">-- Select Role --</option>
+                    {% for role in roles %}
+                    <option value="{{ role.id }}">{{ role.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block mb-1 text-sm font-medium">Status</label>
+                    <select name="status" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+
+        </div>
+
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="closecreateModal()"
+            class="px-5 py-2 border rounded-lg hover:bg-slate-100 transition">Cancel</button>
+            
+            <button type="submit" id="saveUserBtn"
+            class="flex items-center justify-center gap-2 px-5 py-2 bg-shipzoid-teal text-white rounded-lg shadow-lg
+            hover:bg-shipzoid-navy transform hover:scale-105 transition
+            focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/50 disabled:opacity-50 disabled:cursor-not-allowed">
+            
+            <!-- Spinner -->
+            <svg id="btnSpinner" class="w-5 h-5 text-white animate-spin hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span id="btnText">Save</span>
+            </button>
+        </div>
+        </form>
+    </div>
+    </div>
+
+
+  
+        <!-- Edit Modal -->
+        <div id="editModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-50">
+            <div class="bg-white w-full max-w-5xl p-8 rounded-xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 modal-content overflow-y-auto max-h-[95vh]">
+                <!-- Header -->
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold flex items-center gap-2 text-shipzoid-teal">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit User
+                    </h3>
+                    <button type="button" onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="editUserForm" method="post" class="space-y-5" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" id="editId">
+
+                    <div class="flex flex-col items-center">
+                        <!-- Preview Image -->
+                        <div class="w-28 h-28 rounded-full overflow-hidden border-2 border-shipzoid-teal mb-3">
+                            <img id="editPreview" src="{% static 'adminpanel/images/default_image/not_image.jpg' %}"
+                                alt="Profile Preview" class="w-full h-full object-cover">
+                        </div>
+
+                        <!-- Upload Button -->
+                        <label class="cursor-pointer bg-shipzoid-teal hover:bg-shipzoid-navy text-white px-4 py-2 rounded-lg shadow-md transition">
+                            <i class="fas fa-upload mr-2"></i> Change Profile
+                            <input type="file" name="profile_image" id="editImageInput" accept="image/*" class="hidden">
+                        </label>
+                    </div>
+
+
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">First Name</label>
+                            <input type="text" name="first_name" id="editFirstName" required
+                                placeholder="Enter First Name"
+                                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Last Name</label>
+                            <input type="text" name="last_name" id="editLastName" placeholder="Enter Last Name"
+                                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Email</label>
+                            <input type="email" name="email" id="editEmail" placeholder="Enter Email ID"
+                                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Address</label>
+                            <input type="text" name="address" id="editAddress" placeholder="Enter Address"
+                                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Phone Number</label>
+                            <input type="text" name="phone" id="editPhone" placeholder="Enter Phone Number"
+                                oninput="ValidatePhoneNumber(this)"
+                                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                        </div>
+
+                        <div class="relative">
+                            <label class="block mb-1 text-sm font-medium">Password</label>
+                            <input type="password" id="editPassword" name="password" placeholder="Enter Password"
+                                class="w-full border border-slate-300 rounded-lg px-4 py-2 pr-10 
+                                        focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 
+                                        outline-none transition">
+                            <button type="button" onclick="togglepassword()" 
+                                class="absolute right-3 top-9 text-slate-500 hover:text-slate-700">
+                                <i id="toggleIcon1" class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Role</label>
+                            <select name="role" id="editRole"
+                                class="search-select w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                                <option value="">-- Select Role --</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Status</label>
+                            <select name="status" id="editStatus"
+                                class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition">
+                                <option value="1">Active</option>
+                                <option value="0">Inactive</option>
+                            </select>
+                        </div>
+
+
+                    </div>
+                       <div class="flex justify-end gap-3 mt-4">
+                            <button type="button" onclick="closeEditModal()" class="px-5 py-2 border rounded-lg">Cancel</button>
+                            <button type="submit" class="flex items-center justify-center gap-2 px-5 py-2 bg-shipzoid-teal text-white rounded-lg shadow-lg
+                                hover:bg-shipzoid-navy transform hover:scale-105 transition
+                                focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Update
+                            </button>
+                        </div>
+                </form>
+            </div>
+        </div>
+
+
+<!-- DataTable & Modal Script -->
+<script>
+        $(document).ready(function () {
+
+            const DEFAULT_USER_IMAGE = "{% static 'adminpanel/images/default_image/user.jpg' %}";
+
+            const table = $('#usersTable').DataTable({
+                ajax: {
+                    url: "{% url 'adminpanel:get_users' %}",
+                    type: 'GET',
+                    dataSrc: 'data'
+                },
+                columns: [
+                    { // Serial number
+                        data: null,
+                        className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700',
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1 + meta.settings._iDisplayStart;
+                        }
+                    },
+                    { data: 'first_name', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700' },
+                    { data: 'last_name', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700' },
+                    { data: 'email', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700' },
+                    { data: 'phone', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700' },
+                    { data: 'role_name', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700' },
+                    { 
+                        data: 'status', 
+                        className: 'px-6 py-4 whitespace-nowrap text-sm',
+                        render: function (data) {
+                            return data == 1
+                                ? '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span>'
+                                : '<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">Inactive</span>';
+                        }
+                    },
+                    {
+                        data: 'profile_image',
+                        className: 'px-6 py-4 whitespace-nowrap text-sm',
+                        render: function (data, type, row) {
+                            const imageUrl = data ? data : DEFAULT_USER_IMAGE;  // ✅ use the JS variable
+                            return `
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 mr-3">
+                                        <img src="${imageUrl}" 
+                                            alt="User Image" 
+                                            class="w-full h-full object-cover rounded-lg border shadow-sm hover:scale-105 transition-transform duration-200">
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'px-6 py-4 whitespace-nowrap text-sm',
+                        render: function (data, type, row) {
+                          let buttons = ``;
+
+                          {% if request_user|has_permission:"user_edit" %}
+                          buttons += `
+                          <button onclick='openEditModal(${JSON.stringify(row)})'
+                          class="text-shipzoid-teal hover:text-shipzoid-teal mr-3">
+                          <i class="fas fa-edit"></i>
+                          </button>
+                          `;
+                        {% endif %}
+
+                        {% if request_user|has_permission:"user_delete" %}
+                        buttons += `
+                        <button onclick="deleteUser(${row.id})" 
+                        class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                        </button>
+                         `;
+                        {% endif %}
+
+                   // If no buttons -> show "No Access"
+                     if (!buttons.trim()) {
+                    buttons = `
+                    <span class="px-2 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-semibold">
+                    <i class="fas fa-lock mr-1"></i>No Access
+                  </span>
+                  `;
+                }
+
+        return buttons;
+                        }
+                    }
+                ],
+                responsive: true,
+                paging: true,
+                searching: true,
+                ordering: false,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    loadingRecords: `
+                        <div class="flex flex-col items-center justify-center py-6">
+                            <div class="w-8 h-8 border-4 border-shipzoid-teal border-t-transparent rounded-full animate-spin"></div>
+                            <span class="mt-2 text-gray-600 text-sm">Loading data...</span>
+                        </div>
+                    `,
+                    emptyTable: `
+                        <div class="flex flex-col items-center justify-center py-6 text-center text-gray-900 dark:text-gray-100">
+                            <p class="text-lg font-semibold">No users found</p>
+                        </div>
+                    `
+                },
+                initComplete: function () {
+                    $('#usersTable_filter input')
+                        .addClass('border border-shipzoid-teal rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/40')
+                        .attr('placeholder', 'Search...');
+                    $('#usersTable_length select')
+                        .addClass('border border-shipzoid-teal rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/40');
+                    $('#usersTable_paginate').addClass('mt-3');
+                    $('#usersTable_paginate .paginate_button')
+                        .addClass('border border-gray-300 rounded-md px-3 py-1 mx-1 text-sm text-gray-700 hover:bg-blue-100');
+                }
+            });
+        });
+
+
+
+
+
+        function openCreateModal() {
+            const modal = document.getElementById('createModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        function closecreateModal() {
+            const modal = document.getElementById('createModal');
+            modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
+        // Open Edit Modal and populate fields
+            function openEditModal(data) {
+            document.getElementById('editId').value = data.id;
+            document.getElementById('editFirstName').value = data.first_name || '';
+            document.getElementById('editLastName').value = data.last_name || '';
+            document.getElementById('editEmail').value = data.email || '';
+            document.getElementById('editAddress').value = data.address || '';
+            document.getElementById('editPhone').value = data.phone || '';
+            document.getElementById('editPassword').value = data.password; // Leave blank for security
+            document.getElementById('editRole').value = data.role_id || '';
+            document.getElementById('editStatus').value = data.status;
+
+
+            document.getElementById('editPreview').src = data.profile_image 
+                ? data.profile_image 
+                : "{% static 'adminpanel/images/default_image/user.jpg' %}";
+
+
+
+            const modal = document.getElementById('editModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            setTimeout(() => {
+                modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
+        }
+
+
+        $(document).ready(function () {
+        $("#addUserForm").on("submit", function (e) {
+            e.preventDefault();
+
+            let email = $("input[name='email']").val().trim();
+
+
+            // Email Regex
+            let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailPattern.test(email)) {
+                Swal.fire("Error", "Please enter a valid email address!", "error");
+                return;
+            }
+
+            // Disable button & show spinner
+            $("#saveUserBtn").attr("disabled", true);
+            $("#btnText").text("Saving...");
+            $("#btnSpinner").removeClass("hidden");
+
+            // ✅ Use FormData for file upload
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: "{% url 'adminpanel:add_user' %}",
+                type: "POST",
+                data: formData,
+                processData: false,  // ✅ Required for FormData
+                contentType: false,  // ✅ Required for FormData
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'User Added!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500,
+                        background: '#F0FDF4',
+                        color: '#065F46'
+                    });
+
+                    // Reload after short delay
+                  setTimeout(function () {
+                        location.reload();
+                    }, 1500);
+                },
+                error: function (xhr) {
+                    let errorMsg = "Something went wrong!";
+                    if (xhr.responseJSON) {
+                        if (xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        } else if (xhr.responseJSON.errors) {
+                            // Collect multiple field errors
+                            errorMsg = Object.values(xhr.responseJSON.errors).join("\n");
+                        }
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: errorMsg,
+                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#DC2626',
+                        background: '#FEF2F2',
+                        color: '#991B1B'
+                    });
+                },
+                complete: function () {
+                    // ✅ Always reset button
+                    $("#saveUserBtn").attr("disabled", false);
+                    $("#btnText").text("Save");
+                    $("#btnSpinner").addClass("hidden");
+                }
+            });
+        });
+    });
+
+
+    // AJAX form submission
+    $(document).ready(function () {
+        $("#editUserForm").on("submit", function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we update the user',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.ajax({
+                url: "{% url 'adminpanel:edit_user' %}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'User Updated!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    setTimeout(() => location.reload(), 1500);
+                },
+                error: function (xhr) {
+                    let msg = xhr.responseJSON?.error || 'Something went wrong!';
+                    if(xhr.responseJSON?.errors){
+                        msg = Object.values(xhr.responseJSON.errors).join("\n");
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: msg
+                    });
+                }
+            });
+        });
+    });
+
+
+    function deleteUser(id) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will permanently delete the user.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#DC2626',  // Tailwind red-600
+            cancelButtonColor: '#2563EB',   // Tailwind blue-600
+            background: '#FEF2F2',           // Tailwind red-50 background
+            color: '#991B1B',                // Tailwind red-800 text color
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`{% url 'adminpanel:delete_user' 0 %}`.replace('0', id), {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.error,
+                            confirmButtonText: 'Try Again',
+                            confirmButtonColor: '#DC2626',
+                            background: '#FEF2F2',
+                            color: '#991B1B'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: data.message,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#16A34A',  // Tailwind green-600
+                            background: '#DCFCE7',           // Tailwind green-50 background
+                            color: '#166534'                // Tailwind green-800 text
+                        });
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong.',
+                        confirmButtonText: 'Try Again',
+                        confirmButtonColor: '#DC2626',
+                        background: '#FEF2F2',
+                        color: '#991B1B'
+                    });
+                });
+            }
+        });
+    }
+
+
+
+
+
+    $(document).ready(function() {
+            // Apply to all dropdowns with 'search-select' class globally
+            $('.search-select').select2({
+                placeholder: "Select an option",
+                allowClear: false,
+                width: '100%'
+            });
+        });
+
+
+        function ValidatePhoneNumber(input) {
+            // Remove anything that is not a number
+            input.value = input.value.replace(/[^0-9]/g, '');
+
+            // Ensure max length 10 digits
+            if (input.value.length > 10) {
+                input.value = input.value.slice(0, 10);
+            }
+        }
+
+
+        function togglePassword() {
+            const passwordInput = document.getElementById("password");
+            const toggleIcon = document.getElementById("toggleIcon");
+            
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleIcon.classList.remove("fa-eye");
+                toggleIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                toggleIcon.classList.remove("fa-eye-slash");
+                toggleIcon.classList.add("fa-eye");
+            }
+        }
+
+        function togglepassword() {
+            const passwordInput = document.getElementById("editPassword");
+            const toggleIcon = document.getElementById("toggleIcon1");
+            
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleIcon.classList.remove("fa-eye");
+                toggleIcon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                toggleIcon.classList.remove("fa-eye-slash");
+                toggleIcon.classList.add("fa-eye");
+            }
+        }
+
+        // Preview for Create
+        document.getElementById('createImageInput').addEventListener('change', function(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('createPreview').src = e.target.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        });
+
+        // Preview for Edit
+        document.getElementById('editImageInput').addEventListener('change', function(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('editPreview').src = e.target.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        });
+
+</script>
+
+{% endblock %}

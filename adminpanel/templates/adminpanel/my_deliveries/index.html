@@ -1,0 +1,139 @@
+{% extends 'adminpanel/layouts/base.html' %}
+{% load permissions_tags %} 
+
+{% block content %}
+    <div id="content-area" class="flex-1 p-4 lg:p-8 gradient-bg font-inter">
+
+        <!-- Header & Create Button -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+           <i class="fa-solid fa-solid fa-user-gear text-shipzoid-teal"></i>{{ heading }}
+            </h2>
+        </div>
+
+        <!-- DataTable Container -->
+        <div class="overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-lg transition hover:shadow-xl p-4 ">
+            <table id="Deliveryman_ordersTable" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">S.No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order Number</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer Phone NUmber</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+
+<!-- DataTable & Modal Script -->
+<script>
+$(document).ready(function () {
+    const status = "{{ status }}"; // Pass status from Django template
+    const deliverymanViewUrl = "{% url 'adminpanel:deliveryman_view_order' status='STATUS' order_id='ORDER' %}";
+    const table = $('#Deliveryman_ordersTable').DataTable({
+        ajax: {
+            url: "{% url 'adminpanel:get_delivery_orders' status %}",
+            type: 'GET',
+            dataSrc: 'data'
+        },
+        columns: [
+            {
+                data: null,
+                className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row, meta) {
+                    return meta.row + 1 + meta.settings._iDisplayStart;
+                }
+            },
+            { data: 'order_number', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center' },
+            { data: 'full_name', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center' },
+            { data: 'phone_number', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center' },
+            { data: 'total_amount', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center' },
+            { data: 'created_at', className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center' },
+            { 
+                data: 'status',
+                className: 'px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center',
+                render: function (data, type, row) {
+                    let colorClasses = '';
+                    let label = data ? data.charAt(0).toUpperCase() + data.slice(1) : '';
+
+                    switch (data) {
+                        case 'confirmed':
+                            colorClasses = 'bg-green-100 text-green-700';
+                            break;
+                        case 'inprogress':
+                            colorClasses = 'bg-yellow-100 text-yellow-700';
+                            break;
+                        case 'delivered':
+                            colorClasses = 'bg-blue-100 text-blue-700';
+                            break;
+                        default:
+                            colorClasses = 'bg-gray-100 text-gray-700';
+                    }
+
+                    return `<span class="px-3 py-1 text-xs font-semibold rounded-full text-center ${colorClasses}">${label}</span>`;
+                }
+            },
+             {
+                        data: null,
+                        className: 'px-6 py-4 whitespace-nowrap text-sm text-center',
+                        render: function (data, type, row) {
+                           let buttons = ``;
+
+                            buttons += `
+                                <button onclick="window.location.href='${deliverymanViewUrl
+                                    .replace('STATUS', status)
+                                    .replace('ORDER', row.order_id)}'"
+                                    class="text-shipzoid-teal hover:text-shipzoid-teal mr-3">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            `;
+
+                            return buttons;
+
+                        }
+                    }
+        ],
+        responsive: true,
+        paging: true,
+        searching: true,
+        ordering: false,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        language: {
+            loadingRecords: `
+                <div class="flex flex-col items-center justify-center py-6">
+                    <div class="w-8 h-8 border-4 border-shipzoid-teal border-t-transparent rounded-full animate-spin"></div>
+                    <span class="mt-2 text-gray-600 text-sm">Loading data...</span>
+                </div>
+            `,
+            emptyTable: `
+                <div class="flex flex-col items-center justify-center py-6 text-center text-gray-900 dark:text-gray-100">
+                    <p class="text-lg font-semibold">No orders found</p>
+                </div>
+            `
+        },
+        initComplete: function () {
+            $('#Deliveryman_ordersTable_filter input')
+                .addClass('border border-shipzoid-teal rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/40')
+                .attr('placeholder', 'Search...');
+            $('#Deliveryman_ordersTable_length select')
+                .addClass('border border-shipzoid-teal rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/40');
+            $('#Deliveryman_ordersTable_paginate').addClass('mt-3');
+            $('#Deliveryman_ordersTable_paginate .paginate_button')
+                .addClass('border border-gray-300 rounded-md px-3 py-1 mx-1 text-sm text-gray-700 hover:bg-blue-100');
+        }
+    });
+});
+
+
+
+</script>
+{% endblock %}

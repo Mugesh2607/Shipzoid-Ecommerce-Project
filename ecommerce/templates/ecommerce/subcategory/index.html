@@ -1,0 +1,827 @@
+
+{% include 'ecommerce/layouts/header.html' %}
+
+{% include 'ecommerce/layouts/top_menu.html' %}
+
+
+      <!-- Products Section -->
+        <section id="products-section" class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+
+            <!-- 🔹 Filter Button -->
+            <div id="filter-button-wrapper" class="flex justify-end mb-6">
+            <button id="open-filter-btn"
+                class="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition">
+                <i class="fas fa-filter"></i>
+                <span>Filters</span>
+            </button>
+            </div>
+
+
+            <!-- Products Grid -->
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <!-- Products will be loaded here dynamically -->
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" class="flex justify-center mt-12 hidden">
+            <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Load More Button -->
+            <div class="text-center mt-12">
+            <button id="load-more-btn" class="bg-shipzoid-teal text-white px-8 py-3 rounded-lg font-semibold hover:bg-shipzoid-teal-dark transition-all duration-300 transform hover:scale-105 shadow-lg">
+                Load More Products
+            </button>
+            </div>
+
+
+            <div id="no-products-message" class="hidden col-span-full text-center py-20">
+                <div class="flex flex-col items-center space-y-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                        class="h-20 w-20 text-gray-400 animate-bounce" fill="none" 
+                        viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" 
+                            stroke-width="2" d="M9 17v-2h6v2m-7 4h8a2 2 0 002-2v-6a9 9 0 10-12 0v6a2 2 0 002 2z" />
+                    </svg>
+                    <h3 class="text-2xl font-semibold text-gray-700">Coming Soon!</h3>
+                    <p class="text-gray-500 max-w-md">Products are on the way. Please check back later.</p>
+
+                    <button onclick="window.location.href='{% url 'ecommerce:home' %}'"
+                            class="px-6 py-3 bg-shipzoid-teal text-white rounded-xl shadow hover:bg-shipzoid-teal-dark transition-all duration-300">
+                    Back to Home
+                    </button>
+                </div>
+                </div>
+
+
+
+
+
+                  <!-- 🔹 Backdrop -->
+            <div id="backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+            <!-- 🔹 Sidebar -->
+            <aside id="sidebar"
+                class="fixed top-0 right-0 w-80 h-full bg-white shadow-lg z-50 p-6 overflow-y-auto transform translate-x-full transition-transform duration-300">
+
+                <!-- Header -->
+                <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">Filters</h2>
+                <button id="close-filter-btn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+                </div>
+
+                <!-- Filter Options -->
+                <div class="space-y-6">
+                <!-- Brand -->
+                {% if brands %}
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-600 mb-2">Brands</h3>
+                            <div class="space-y-2">
+                                {% for brand in brands %}
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" value="{{brand.id}}" class="form-checkbox text-shipzoid-teal">
+                                    <span>{{brand.name}}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    
+                {% endif %}
+
+                <!-- Price -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Price</h3>
+                    <div class="flex justify-between mb-1">
+                        <span id="price-display">₹0</span> <!-- Display selected price -->
+                    </div>
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="100000" 
+                        value="0" 
+                        step="0"
+                        id="price-range"
+                        class="w-full accent-shipzoid-teal"
+                    >
+                </div>
+
+
+                </div>
+
+                <!-- Apply Button -->
+                <div class="mt-8">
+                <button class="w-full bg-shipzoid-teal text-white py-3 rounded-lg font-semibold hover:bg-shipzoid-teal-dark transition apply-filters-btn">
+                    Apply Filters
+                </button>
+                </div>
+            </aside>
+
+        </div>
+        </section>
+
+        {% include 'ecommerce/layouts/footer.html' %}
+
+<script>
+const ecommerce = {
+  currentPage: 1,
+  productsPerPage: 8,
+  isLoading: false,
+  hasNext: true,
+  products: [],   // ✅ keep all loaded products here
+  encId: "{{ encrypt_id }}" ,
+
+  async fetchProducts() 
+  {
+
+    const selectedBrands = Array.from(
+      document.querySelectorAll('input[type="checkbox"]:checked')
+    ).map(cb => cb.value);
+
+    // 🔹 Get price range value
+    const priceRange = document.getElementById('price-range').value;
+
+    // Build query params dynamically
+    const queryParams = new URLSearchParams();
+    queryParams.append('page', this.currentPage);
+    queryParams.append('per_page', this.productsPerPage);
+
+    // ✅ Add brands only if selected
+    if (selectedBrands.length > 0) {
+      queryParams.append('brands', selectedBrands.join(","));
+    }
+
+    // ✅ Add price only if greater than default (0)
+    if (parseInt(priceRange) > 0) {
+      queryParams.append('price', priceRange);
+    }
+
+
+    {% comment %} const response = await fetch(
+        `/home/subcategory-products/${this.encId}/?page=${this.currentPage}&per_page=${this.productsPerPage}`
+      ); {% endcomment %}
+
+
+      const response = await fetch(`/home/subcategory-products/${this.encId}/?${queryParams}`);
+    if (!response.ok) {
+      console.error("Failed to fetch products");
+      return { products: [], has_next: false };
+    }
+    return await response.json();
+  },
+
+  generateStars(rating) {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    let starsHTML = "";
+
+    for (let i = 0; i < fullStars; i++) starsHTML += '<i class="fas fa-star"></i>';
+    if (halfStar) starsHTML += '<i class="fas fa-star-half-alt"></i>';
+    for (let i = 0; i < emptyStars; i++) starsHTML += '<i class="far fa-star"></i>';
+
+    return starsHTML;
+  },
+
+  createProductCard(product) {
+    const card = document.createElement("div");
+    card.id = `product-${product.id}`;  // ✅ Unique ID to prevent duplicates
+    card.className =
+      "bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group overflow-hidden relative";
+
+
+    let discountBadge = "";
+    let finalPrice = product.price;
+    let oldPriceHTML = "";
+
+    // ✅ Check if discount exists
+    if (product.discount && product.discount_type) {
+      let discountPercent = 0;
+
+      if (product.discount_type === "percentage") {
+        // Already percentage
+        discountPercent = product.discount;
+        finalPrice = Math.round(product.price - (product.price * discountPercent) / 100);
+      } else if (product.discount_type === "amount") {
+        // Convert amount to percentage
+        discountPercent = Math.round((product.discount / product.price) * 100);
+        finalPrice = Math.round(product.price - product.discount);
+      }
+
+      // ✅ Show badge in percentage only
+      discountBadge = `
+        <span class="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+          ${discountPercent}% OFF
+        </span>
+      `;
+
+      // ✅ Show old price with strikethrough
+      oldPriceHTML = `
+        <span class="text-gray-400 text-lg line-through mr-2">
+          ₹${product.price}
+        </span>
+      `;
+    }
+
+
+
+    card.innerHTML = `
+      <div class="relative overflow-hidden">
+        ${discountBadge}
+        <img src="${product.image}" alt="${product.name}"
+             class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500">
+        <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <button onclick="ecommerce.openProductModal(${product.id})"
+                  class="bg-white text-gray-900 px-6 py-2 rounded-full font-semibold transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+            Quick View
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <h3 class="font-semibold text-lg mb-2 line-clamp-2">${product.name}</h3>
+        <div class="flex items-center mb-3">
+          <div class="flex text-yellow-400">
+            ${this.generateStars(4.5)}
+          </div>
+          <span class="text-gray-500 text-sm ml-2">(120)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+          ${oldPriceHTML}
+          <span class="text-1xl font-bold text-gray-900">₹${finalPrice}</span>
+          </div>
+          <button onclick="ecommerce.openProductModal(${product.id})"
+                  class="bg-shipzoid-teal text-white px-4 py-2 rounded-lg hover:bg-shipzoid-teal-dark transition-colors duration-200 font-medium">
+            <i class="fas fa-cart-plus mr-1"></i> Add
+          </button>
+        </div>
+      </div>
+    `;
+
+    return card;
+  },
+
+  async loadProducts() {
+    if (this.isLoading || !this.hasNext) return;
+    this.isLoading = true;
+
+    const loadingIndicator = document.getElementById("loading-indicator");
+    loadingIndicator.classList.remove("hidden");
+
+    const data = await this.fetchProducts();
+    const productsGrid = document.getElementById("products-grid");
+    const emptyMessage = document.getElementById("no-products-message"); // ✅
+
+      // ✅ If no products at all (first page, nothing returned)
+    if (this.currentPage === 1 && data.products.length === 0) {
+        emptyMessage.classList.remove("hidden");
+        productsGrid.innerHTML = ""; // clear grid just in case
+        loadingIndicator.classList.add("hidden");
+        this.isLoading = false;
+        this.hasNext = false;
+        document.getElementById("load-more-btn").style.display = "none";
+
+            // 🔹 Hide filter button if no products
+        document.getElementById("filter-button-wrapper").classList.add("hidden");
+
+
+
+        return;
+    }
+
+    // ✅ Hide empty message if products exist
+    emptyMessage.classList.add("hidden");
+    document.getElementById("filter-button-wrapper").classList.remove("hidden");
+  
+    // ✅ Save products to memory so openProductModal can find them later
+    this.products = [...this.products, ...data.products];
+
+
+    data.products.forEach((product, index) => {
+      if (!document.getElementById(`product-${product.id}`)) {  // ✅ prevent duplicate append
+        const productCard = this.createProductCard(product);
+        productCard.style.animationDelay = `${index * 100}ms`;
+        productCard.classList.add("animate-fadeIn");
+        productsGrid.appendChild(productCard);
+      }
+    });
+
+    this.hasNext = data.has_next;
+
+    if (!data.has_next) {
+      document.getElementById("load-more-btn").style.display = "none";
+    }
+
+    loadingIndicator.classList.add("hidden");
+    this.isLoading = false;
+  },
+
+  loadMoreProducts() {
+    if (!this.hasNext) return;
+    this.currentPage++;
+    this.loadProducts();
+  },
+
+  setupInfiniteScroll() {
+    let scrollTimeout;
+    window.addEventListener("scroll", () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+          this.loadMoreProducts();
+        }
+      }, 200); // ✅ throttle scroll
+    });
+  },
+
+
+    updateProductWishlistStatus(productId, isInWishlist) {
+    const productIndex = this.products.findIndex(p => p.id === productId);
+    if (productIndex !== -1) {
+      this.products[productIndex].is_in_wishlist = isInWishlist;
+    }
+  },
+
+  
+    openProductModal(productId) {
+      const product = this.products.find(p => p.id === productId);
+      if (!product) return;
+
+      const modal = document.getElementById('product-modal');
+      const content = document.getElementById('product-detail-content');
+
+      // ✅ Static values
+      const staticRating = 4.5;
+      const staticReviews = 120;
+      // ✅ Calculate discount percentage and discounted price
+      let discountPercentage = 0;
+      let discountedPrice = product.price;
+
+      if (product.discount && product.discount > 0) {
+        if (product.discount_type === 'percentage') {
+          discountPercentage = Math.round(product.discount);
+          discountedPrice = Math.round(product.price * (1 - discountPercentage / 100));
+        } else if (product.discount_type === 'amount') {
+          discountPercentage = Math.round((product.discount / product.price) * 100);
+          discountedPrice = Math.round(product.price - product.discount);
+        }
+      }
+
+      // ✅ Original price display if there's a discount
+      const originalPrice = discountPercentage
+        ? `<span class="text-gray-500 line-through text-lg">₹${product.price}</span>`
+        : '';
+
+      // ✅ Handle sizes with default selection
+      let sizeButtons = '';
+      let firstSize = '';
+      if (product.sizes && product.sizes.trim() !== '') {
+        const sizesArray = product.sizes.split(',').map(s => s.trim()).filter(Boolean);
+        firstSize = sizesArray[0]; // default first size
+        sizeButtons = `
+          <div class="mt-4">
+            <h4 class="font-semibold text-lg mb-2">Available Sizes</h4>
+            <div class="flex flex-wrap gap-2" id="size-options">
+              ${sizesArray
+                .map(
+                  (size, index) => `
+                <button 
+                  class="size-btn px-4 py-2 border rounded-lg text-sm font-medium transition-all duration-300
+                  ${index === 0 ? 'bg-shipzoid-teal text-white' : 'hover:bg-shipzoid-teal hover:text-white'}"
+                  data-size="${size}">
+                  ${size}
+                </button>
+              `
+                )
+                .join('')}
+            </div>
+          </div>
+        `;
+      }
+
+
+      const wishlistButtonHTML = product.is_in_wishlist
+      ? ` 
+        <button id="wishlistremove-btn" class="relative group px-6 py-4 border-2 border-red-500 text-red-500 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 hover:bg-red-500 hover:text-white">
+          <i class="fas fa-trash-alt"></i>
+          <!-- Tooltip -->
+          <span class="absolute -top-8 bg-red-500 text-white text-sm rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            Remove Wishlist
+          </span>
+        </button>`
+      : `
+        <button id="wishlist-btn" class="relative group px-6 py-4 border-2 border-green-500 text-green-500 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 hover:bg-green-500 hover:text-white">
+          <i class="fas fa-heart"></i>
+          <!-- Tooltip -->
+          <span class="absolute -top-8 bg-green-500 text-white text-sm rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            Add Wishlist
+          </span>
+        </button>`;
+
+
+      content.innerHTML = `
+        <div class="space-y-4">
+          <img src="${product.image}" alt="${product.name}" class="w-full h-96 object-cover rounded-xl">
+        </div>
+        <div class="space-y-6">
+          <div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">${product.name}</h2>
+              ${product.brand_name && product.brand_name.trim() !== '' 
+                ? `<p class="text-gray-500 text-lg mt-1">by <span class="font-semibold">${product.brand_name}</span></p>` 
+                : ''
+              }
+            <div class="flex items-center mb-4">
+              <div class="flex text-yellow-400 text-lg">
+                ${this.generateStars(staticRating)}
+              </div>
+              <span class="text-gray-500 ml-2">${staticRating} (${staticReviews} reviews)</span>
+            </div>
+          </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-4xl font-bold text-gray-900">₹${discountedPrice}</span>
+          ${originalPrice}
+          ${discountPercentage > 0
+            ? `<span class="bg-red-500 text-white px-2 py-1 rounded text-sm font-semibold">-${discountPercentage}%</span>`
+            : ''}
+        </div>
+
+          <div>
+            <h4 class="font-semibold text-lg mb-3">Description</h4>
+            <p class="text-gray-600 leading-relaxed">${product.description}</p>
+          </div>
+
+          ${sizeButtons}
+
+          <div class="border-t pt-6">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-medium">Quantity:</label>
+              <div class="flex items-center border border-gray-300 rounded-lg">
+                <button onclick="this.nextElementSibling.stepDown()" 
+                        class="px-3 py-2 hover:bg-gray-100 transition-colors">-</button>
+                <input type="number" value="1" min="1" max="10" 
+                      class="w-16 text-center border-0 focus:outline-none">
+                <button onclick="this.previousElementSibling.stepUp()" 
+                        class="px-3 py-2 hover:bg-gray-100 transition-colors">+</button>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <button onclick="ecommerce.addToCart(${product.id});" ecommerce.closeProductModal();" 
+                      class="flex-1 bg-shipzoid-teal text-white py-4 rounded-xl font-semibold text-lg hover:bg-shipzoid-teal-dark transition-all duration-300 transform hover:scale-105">
+                <i class="fas fa-cart-plus mr-2"></i>Add to Cart
+              </button>
+            ${wishlistButtonHTML}
+            </div>
+
+            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-4 text-sm text-gray-600">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-truck text-shipzoid-teal"></i>
+                  <span>Free shipping on orders over $50</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-undo text-shipzoid-teal"></i>
+                  <span>30-day return policy</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Track selected size dynamically (default to empty if no size)
+      let selectedSize = product.sizes && product.sizes.trim() !== '' ? firstSize : '';
+
+      // Add size selection behavior
+      const sizeButtonsEls = document.querySelectorAll('#size-options .size-btn');
+      sizeButtonsEls.forEach(btn => {
+        btn.addEventListener('click', () => {
+          sizeButtonsEls.forEach(b => b.classList.remove('bg-shipzoid-teal', 'text-white'));
+          btn.classList.add('bg-shipzoid-teal', 'text-white');
+          selectedSize = btn.getAttribute('data-size'); // update selected size
+        });
+      });
+
+      // Wishlist button click
+      const wishlistBtn = document.getElementById('wishlist-btn');
+      if (wishlistBtn) {
+          wishlistBtn.addEventListener('click', () => {
+              const quantityInput = document.getElementById('quantity-input');
+              const quantity = quantityInput ? quantityInput.value : 1;
+              addToWishlist(product.id, selectedSize, quantity);
+          });
+      }
+
+      // remove Wishlist button click
+      const remove_wishlistBtn = document.getElementById('wishlistremove-btn');
+      if (remove_wishlistBtn) {
+          remove_wishlistBtn.addEventListener('click', () => {
+              removewishlist(product.id);
+          });
+      }
+
+      this.showModal(modal);
+    },
+  closeProductModal() {
+      this.hideModal(document.getElementById('product-modal'));
+    },
+
+    showModal(modal) {
+      modal.classList.remove('hidden', 'opacity-0');
+      modal.classList.add('opacity-100');
+    },
+
+    hideModal(modal) {
+      modal.classList.remove('opacity-100');
+      modal.classList.add('opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    },
+
+   addToCart: function(productId) {
+      const modal = $("#product-modal");
+
+      // Get selected size
+      const selectedSize = modal.find("#size-options .size-btn.bg-shipzoid-teal").data("size") || null;
+
+      // Get quantity
+      const quantity = modal.find('input[type="number"]').val();
+
+      // Validation
+      if (!quantity || quantity < 1) {
+        showError("Please select a valid quantity.");
+        return;
+      }
+      if (modal.find("#size-options").length && !selectedSize) {
+        showError("Please select a size.");
+        return;
+      }
+
+      // Prepare data
+      const cartdata = {
+        product_id: productId,
+        size: selectedSize,
+        quantity: quantity
+      };
+
+      // AJAX call
+      $.ajax({
+        url: "{%url 'ecommerce:add_to_cart'%}", // Your endpoint URL
+        method: "POST",
+        data: cartdata,
+        headers: {
+           "X-CSRFToken": $('meta[name="csrf-token"]').attr("content"),
+        },
+        success: function(response) {
+          console.log(response);
+
+          if (response.success) {
+            showSuccess(response.message || "Product added to cart!");
+            fetchCart();
+          } else {
+            showError(response.message || "Failed to add product to cart.");
+          }
+        },
+        error: function (xhr) {
+          let response = xhr.responseJSON;
+
+          if (xhr.status === 401 && response && response.message) {
+            // Handle unauthorized message
+            showError(response.message);
+          } else {
+            // General fallback error
+            showError("An error occurred while adding to cart.");
+          }
+        }
+      });
+    }
+};
+
+
+
+// Helper to show success toast
+function showSuccess(message) {
+  const toast = $("#cart-success");
+  $("#cart-success-message").text(message);
+  toast.removeClass("hidden").addClass("translate-y-0");
+  setTimeout(() => {
+    toast.addClass("hidden");
+  }, 3000);
+}
+
+// Helper to show error toast
+function showError(message) {
+  const toast = $("#cart-error");
+  $("#cart-error-message").text(message);
+  toast.removeClass("hidden").addClass("translate-y-0");
+  setTimeout(() => {
+    toast.addClass("hidden");
+  }, 3000);
+}
+
+
+function addToWishlist(productId, size = '', quantity = 1) {
+    $.ajax({
+        url: '/home/wishlist/add/',
+        method: 'POST',
+        data: {
+            product_id: productId,
+            size: size,
+            quantity: quantity
+        },
+        headers: {
+            "X-CSRFToken": $('meta[name="csrf-token"]').attr("content"),
+        },
+        success: function (response) {
+            if (response.success) {
+                showSuccess(response.message);
+                fetchWishlist();
+               ecommerce.updateProductWishlistStatus(productId, true);
+                const wishlistBtn = document.getElementById('wishlist-btn');
+                if (wishlistBtn) {
+                    // Replace Add button with Remove button
+                    const removeBtnHTML = `
+                        <button id="wishlistremove-btn" class="relative group px-6 py-4 border-2 border-red-500 text-red-500 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 hover:bg-red-500 hover:text-white">
+                            <i class="fas fa-trash-alt"></i>
+                            <span class="absolute -top-8 bg-red-500 text-white text-sm rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                                Remove Wishlist
+                            </span>
+                        </button>
+                    `;
+                    wishlistBtn.outerHTML = removeBtnHTML;
+                    
+                    // Reattach event listener to the new button
+                    const removeBtn = document.getElementById('wishlistremove-btn');
+                    if (removeBtn) {
+                        removeBtn.addEventListener('click', () => {
+                            removewishlist(productId);
+                        });
+                    }
+                }
+
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function (xhr) {
+            if (xhr.status === 401) {
+                showError("Please login to add items to wishlist.");
+            } else {
+                showError("Failed to add to wishlist. Try again.");
+            }
+        }
+    });
+}
+
+function removewishlist(id) {
+    $.ajax({
+        url: `/home/remove-wishlist/${id}/`,
+        method: "POST",
+        headers: { "X-CSRFToken": $('meta[name="csrf-token"]').attr("content") },
+        success: function(response) {
+            if (response.success) {
+                showSuccess(response.message);
+                fetchWishlist();
+                
+                ecommerce.updateProductWishlistStatus(id, false);
+                
+                const removeBtn = document.getElementById('wishlistremove-btn');
+                if (removeBtn) {
+                    const addBtnHTML = `
+                        <button id="wishlist-btn" class="relative group px-6 py-4 border-2 border-green-500 text-green-500 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 hover:bg-green-500 hover:text-white">
+                            <i class="fas fa-heart"></i>
+                            <span class="absolute -top-8 bg-green-500 text-white text-sm rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                                Add to Wishlist
+                            </span>
+                        </button>
+                    `;
+                    removeBtn.outerHTML = addBtnHTML;
+                    
+                    // Reattach event listener to the new button
+                    const addBtn = document.getElementById('wishlist-btn');
+                    if (addBtn) {
+                        addBtn.addEventListener('click', () => {
+                            const quantityInput = document.querySelector('#product-modal input[type="number"]');
+                            const quantity = quantityInput ? quantityInput.value : 1;
+                            
+                            // Get selected size
+                            const selectedSizeBtn = document.querySelector('#size-options .size-btn.bg-shipzoid-teal');
+                            const selectedSize = selectedSizeBtn ? selectedSizeBtn.getAttribute('data-size') : '';
+                            
+                            addToWishlist(id, selectedSize, quantity);
+                        });
+                    }
+
+                  }
+
+            } else {
+                showError(response.message);
+            }
+        },
+        error: function(xhr) {
+            if (xhr.status === 401) {
+                showError("Please login to manage wishlist.");
+            } else if (xhr.status === 404) {
+                showError("Item not found in wishlist.");
+            } else {
+                showError("Failed to remove from wishlist. Try again.");
+            }
+        }
+    });
+}
+
+
+
+
+document.querySelector('.apply-filters-btn')?.addEventListener('click', () => {
+
+  // Delay showing the filter button by 1 second (1000 ms)
+  setTimeout(() => {
+    document.getElementById("filter-button-wrapper").classList.remove("hidden");
+  }, 100);
+
+
+  // Reset pagination and clear products
+  ecommerce.currentPage = 1;
+  ecommerce.products = [];
+  ecommerce.hasNext = true;
+
+  // Clear grid before reloading
+  document.getElementById('products-grid').innerHTML = '';
+
+  // Load filtered products
+  ecommerce.loadProducts();
+
+  // Hide the sidebar after applying filters
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("backdrop");
+  sidebar.classList.add("translate-x-full");
+  backdrop.classList.add("hidden");
+});
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  ecommerce.loadProducts();
+  ecommerce.setupInfiniteScroll();
+
+  
+  document.getElementById("load-more-btn").addEventListener("click", () => {
+    ecommerce.loadMoreProducts();
+  });
+
+    // Close product modal on clicking outside modal content
+    const productModal = document.getElementById('product-modal');
+    const productModalContent = document.getElementById('product-detail-content').parentElement;
+    productModal.addEventListener('click', (e) => {
+      if (!productModalContent.contains(e.target)) {
+        ecommerce.closeProductModal();
+      }
+    });
+
+      document.getElementById('close-product-modal').addEventListener('click', () => {
+    ecommerce.closeProductModal();
+  });
+  
+});
+
+
+  const openBtn = document.getElementById("open-filter-btn");
+  const closeBtn = document.getElementById("close-filter-btn");
+  const sidebar = document.getElementById("sidebar");
+  const backdrop = document.getElementById("backdrop");
+
+  function openSidebar() {
+    sidebar.classList.remove("translate-x-full");
+    backdrop.classList.remove("hidden");
+  }
+
+  function closeSidebar() {
+    sidebar.classList.add("translate-x-full");
+    backdrop.classList.add("hidden");
+  }
+
+  openBtn.addEventListener("click", openSidebar);
+  closeBtn.addEventListener("click", closeSidebar);
+  backdrop.addEventListener("click", closeSidebar);
+
+
+ $(document).ready(function() {
+        var $priceRange = $('#price-range');
+        var $priceDisplay = $('#price-display');
+
+        // Initialize display
+        $priceDisplay.text('₹' + $priceRange.val());
+
+        // Update display dynamically on slider input
+        $priceRange.on('input change', function() {
+            $priceDisplay.text('₹' + $(this).val());
+        });
+});
+
+</script>

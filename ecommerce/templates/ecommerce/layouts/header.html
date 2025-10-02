@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipzoid Store - Premium Ecommerce</title>
+     <meta name="csrf-token" content="{{ csrf_token }}">
+    <link rel="icon" type="image/png" href="{% static 'adminpanel/images/brand/shipzoid.jpeg' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'ecommerce/css/style.css' %}">
+    <script src="{% static 'ecommerce/js/script.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{% static 'adminpanel/js/jquery-3.6.4.min.js' %}"></script>
+
+    <style>
+       /* Prevent vertical overflow clipping */
+        #categoryNav {
+            overflow-y: visible !important;
+        }
+
+        /* Active dropdown styles */
+        .category-item.active .category-btn {
+            color: #14b8a6; /* shipzoid-teal color */
+        }
+
+        .category-item.active .category-btn i {
+            transform: rotate(180deg);
+        }
+
+        /* Dropdown base styles */
+        .category-dropdown {
+            min-width: 250px;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+            background: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            z-index: 999;
+        }
+
+        /* Active state */
+        .category-dropdown.active {
+            pointer-events: auto;
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Hover styles for desktop */
+        @media (min-width: 1024px) {
+            .category-item:hover .category-btn i {
+                transform: rotate(180deg);
+            }
+        }
+
+        /* Custom scrollbar for subcategories */
+        .category-dropdown .space-y-2::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .category-dropdown .space-y-2::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .category-dropdown .space-y-2::-webkit-scrollbar-thumb {
+            background: #14b8a6;
+            border-radius: 10px;
+        }
+
+        .category-dropdown .space-y-2::-webkit-scrollbar-thumb:hover {
+            background: #0d9488;
+        }
+
+        /* Mobile adjustments (drawer style) */
+        @media (max-width: 768px) {
+            .category-dropdown {
+                position: fixed !important;
+                top: auto !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                max-height: 75vh !important;
+                border-radius: 1rem 1rem 0 0 !important;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+                overflow-y: auto !important;
+                transform: translateY(100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: transform 0.35s ease, opacity 0.35s ease, visibility 0.35s ease;
+                z-index: 9999;
+            }
+
+            .category-dropdown.active {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .category-dropdown .space-y-2 {
+                max-height: 20vh;
+                padding: 1rem 1rem 2rem;
+                overflow-y: auto;
+            }
+        }
+
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+   
