@@ -3,7 +3,9 @@ from django.http import JsonResponse
 from django.http import HttpResponse , Http404
 from django.core.paginator import Paginator
 from adminpanel.models import Category , Subcategory , Product , Brands
+from django.core.mail import send_mail , BadHeaderError
 from ecommerce.models import Cart , Wishlist
+from django.conf import settings
 from ecommerce.utils.encryption import encrypt_id
 from ecommerce.utils.encryption import decrypt_id
 
@@ -13,6 +15,8 @@ def index(request):
 
     for sub in subcategories:
         sub.encrypted_id = encrypt_id(sub.id)
+
+
 
     return render(request, 'ecommerce/home/index.html' , {'categories' : categories , 'subcategories' : subcategories})
 

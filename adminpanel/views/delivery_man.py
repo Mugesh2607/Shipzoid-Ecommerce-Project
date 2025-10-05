@@ -7,6 +7,8 @@ from ecommerce.models import Cart, Wishlist, Order, OrderItem , Customer
 from adminpanel.models import Category , Subcategory , Product , Brands , Tax , User
 from adminpanel.decorators import admin_login_required
 from django.shortcuts import get_object_or_404
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 from decimal import Decimal, ROUND_HALF_UP
 import re ,json
 from django.utils import timezone
@@ -178,6 +180,16 @@ def complete_delivery(request):
 
         try:
             order = Order.objects.get(id=order_id) 
+            customer = Customer.objects.get(id=order.customer_id)
+
+
+            send_delivery_email(
+                customer_email=customer.email,
+                full_name=customer.full_name,
+                order_number=order.order_number
+            )
+
+            
             order.customer_status = "delivered"
             order.delivery_status = "completed"
             order.payment_status = "completed"
@@ -191,3 +203,62 @@ def complete_delivery(request):
             return JsonResponse({"success": False, "message": "Order not found."})
 
     return JsonResponse({"success": False, "message": "Invalid request method."})
+
+
+
+
+
+#Mail Section 
+
+def send_delivery_email(customer_email, full_name, order_number):
+    """
+    Send HTML email to customer after order delivery.
+    """
+    subject = f"Your Shipzoid Order {order_number} has been Delivered!"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to_email = [customer_email]
+
+    # Fallback plain text
+    text_content = f"Hi {full_name}, your order {order_number} has been delivered successfully."
+
+    # HTML content
+    html_content = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin:0; padding:0;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="center">
+                    <table width="600" cellpadding="20" cellspacing="0" style="background-color: #ffffff; border-radius: 10px;">
+                        <tr>
+                            <td style="text-align: center; background-color: #1e40af; color: white; border-radius: 10px 10px 0 0;">
+                                <h1>Shipzoid</h1>
+                                <p>Delivery Confirmation</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p>Hi <strong>{full_name}</strong>,</p>
+                                <p>Your order <strong>{order_number}</strong> has been successfully delivered.</p>
+                                <p>We hope you enjoy your purchase! Thank you for shopping with <strong>Shipzoid</strong>.</p>
+                                <hr>
+                                <p style="font-size: 12px; color: gray;">
+                                    Shipzoid - Fast, Reliable, and Secure Shopping.<br>
+                                    www.shipzoid.com
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+
+    try:
+        msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        print(f"Delivery email sent to {customer_email}")
+    except Exception as e:
+        print("Delivery email sending failed:", e)

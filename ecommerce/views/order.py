@@ -3,10 +3,12 @@ from django.shortcuts import render, redirect ,get_object_or_404
 from django.shortcuts import reverse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.core.mail import EmailMultiAlternatives
 from adminpanel.models import Product, Tax
 from ecommerce.models import Cart, Wishlist, Order, OrderItem , Customer
 from ecommerce.utils.encryption import encrypt_id
 from ecommerce.utils.encryption import decrypt_id
+from django.conf import settings
 import json
 
 
@@ -116,6 +118,13 @@ def create_order(request):
     # Clear the customer's cart after placing the order
     cart_items.delete()
 
+    send_order_email(
+        customer_email=request.POST.get("email"),
+        full_name=request.POST.get("full_name"),
+        order_number=order_number,
+        total_amount=request.POST.get("total")
+    )
+
     # Encrypt order ID for secure redirect
     encrypt_orderid = encrypt_id(order.id)
 
@@ -131,3 +140,58 @@ def checkout_success(request, order_id):
     order = Order.objects.filter(id=decrypt_orderid).first()
     
     return render(request, "ecommerce/checkout/success_page.html", {"order": order})
+
+
+
+#Mail Send Section
+def send_order_email(customer_email, full_name, order_number, total_amount):
+    subject = f"Your Shipzoid Order Confirmation - {order_number}"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to_email = [customer_email]
+
+    # Fallback plain text
+    text_content = f"Hi {full_name}, your order {order_number} for ₹{total_amount} has been placed successfully."
+
+    # HTML content
+    html_content = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin:0; padding:0;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+                <td align="center">
+                    <table width="600" cellpadding="20" cellspacing="0" style="background-color: #ffffff; border-radius: 10px;">
+                        <tr>
+                            <td style="text-align: center; background-color: #1e40af; color: white; border-radius: 10px 10px 0 0;">
+                                <h1>Shipzoid</h1>
+                                <p>Order Confirmation</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <p>Hi <strong>{full_name}</strong>,</p>
+                                <p>Thank you for shopping with <strong>Shipzoid</strong>! Your order has been successfully placed.</p>
+                                <p><strong>Order Number:</strong> {order_number}</p>
+                                <p><strong>Total Amount:</strong> ₹{total_amount}</p>
+                                <p>We are processing your order and will notify you once it is shipped.</p>
+                                <hr>
+                                <p style="font-size: 12px; color: gray;">
+                                    Shipzoid - Fast, Reliable, and Secure Shopping.<br>
+                                    www.shipzoid.com
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+
+    try:
+        msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        print("Order email sent successfully!")
+    except Exception as e:
+        print("Email sending failed:", e)
