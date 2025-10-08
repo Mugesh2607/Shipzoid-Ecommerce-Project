@@ -2,9 +2,10 @@ from django.shortcuts import render
 from django.http import JsonResponse , HttpResponse
 from django.views.decorators.http import require_POST , require_http_methods
 from adminpanel.models import Role  , Permission
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 
 @admin_login_required
+@permission_required('role_list')
 def index(request):
     heading = "Roles"
     permissions = Permission.objects.all().order_by('module', 'name')
@@ -26,11 +27,13 @@ def index(request):
     return render(request ,'adminpanel/roles/index.html',context)
 
 @admin_login_required
+@permission_required('role_list')
 def get_roles(request):
     roles = Role.objects.all().order_by('-id').values('id', 'name', 'status')
     return JsonResponse({'data': list(roles)})
 
 @admin_login_required
+@permission_required('role_add')
 @require_POST
 def add_role(request):
     name = request.POST.get('name')
@@ -56,6 +59,7 @@ def add_role(request):
 
 
 @admin_login_required
+@permission_required('role_edit')
 @require_POST
 def edit_role(request):
     role_id = request.POST.get('id')
@@ -95,6 +99,7 @@ def edit_role(request):
     return JsonResponse({'message': 'Role updated successfully'})
 
 @admin_login_required
+@permission_required('role_delete')
 @require_http_methods(["POST", "DELETE"])
 def delete_role(request, id):
     try:

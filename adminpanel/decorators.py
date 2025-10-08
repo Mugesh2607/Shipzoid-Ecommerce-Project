@@ -1,6 +1,8 @@
 from functools import wraps
 from django.shortcuts import redirect
+from django.contrib import messages
 from django.http import HttpResponseForbidden
+from adminpanel.models import User
 
 def admin_login_required(view_func):
     @wraps(view_func)
@@ -19,17 +21,24 @@ def permission_required(code):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
             user_dict = request.session.get("user")
+
+            # If not logged in
             if not user_dict or not user_dict.get("logged_in"):
-                return HttpResponseForbidden("Permission denied")
-            
-            from adminpanel.models import User
+                messages.warning(request, "Please log in to continue.")
+                return redirect('adminpanel:login')  # your login URL name
+
             try:
                 user = User.objects.get(id=user_dict["id"])
             except User.DoesNotExist:
-                return HttpResponseForbidden("Permission denied")
-            
-            if user.has_permission(code):
-                return view_func(request, *args, **kwargs)
-            return HttpResponseForbidden("Permission denied")
+                messages.error(request, "User not found. Please log in again.")
+                return redirect('adminpanel:login')
+
+            # Correct logic: only allow if user has permission
+            if not user.has_permission(code):
+                messages.error(request, "You don't have permission to access this page.")
+                return redirect('adminpanel:login') # or redirect("dashboard")
+
+            # If permission granted → allow view
+            return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator

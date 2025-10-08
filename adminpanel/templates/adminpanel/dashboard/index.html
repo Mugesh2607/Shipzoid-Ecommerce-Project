@@ -16,13 +16,18 @@
                         <div class="flex justify-between items-center mb-4">
                             <div class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Total Revenue</div>
                             <div class="w-12 h-12 teal-gradient rounded-xl flex items-center justify-center text-white text-xl">
-                                <i class="fas fa-dollar-sign"></i>
+                                <i class="fas fa-rupee-sign"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp" id="revenue-value">$125,430</div>
+                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp"> ₹{{ current_month_revenue|floatformat:2 }}</div>
                         <div class="flex items-center gap-2 text-sm font-semibold">
+                        {% if percentage_revenue_change >= 0 %}
                             <i class="fas fa-arrow-up text-green-600"></i>
-                            <span class="text-green-600">+15.2% from last month</span>
+                            <span class="text-green-600">+{{ percentage_revenue_change }}% from last month</span>
+                        {% else %}
+                            <i class="fas fa-arrow-down text-red-600"></i>
+                            <span class="text-red-600">{{ percentage_revenue_change }}% from last month</span>
+                        {% endif %}
                         </div>
                     </div>
 
@@ -34,10 +39,16 @@
                                 <i class="fas fa-truck"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp" id="shipments-value">2,847</div>
+                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp">{{active_orders}}</div>
                         <div class="flex items-center gap-2 text-sm font-semibold">
+                        {% if percentage_active_change >= 0 %}
                             <i class="fas fa-arrow-up text-green-600"></i>
-                            <span class="text-green-600">+8.7% from yesterday</span>
+                            <span class="text-green-600">+{{ percentage_active_change }}% from last month</span>
+                        {% else %}
+                            <i class="fas fa-arrow-down text-red-600"></i>
+                            <span class="text-red-600">{{ percentage_active_change }}% from last month</span>
+                        {% endif %}
+
                         </div>
                     </div>
 
@@ -49,10 +60,15 @@
                                 <i class="fas fa-box"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp" id="orders-value">4,562</div>
+                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp">{{total_orders}}</div>
                         <div class="flex items-center gap-2 text-sm font-semibold">
+                        {% if percentage_total_orders_change >= 0 %}
+                            <i class="fas fa-arrow-up text-green-600"></i>
+                            <span class="text-green-600">+{{ percentage_total_orders_change }}% from last month</span>
+                        {% else %}
                             <i class="fas fa-arrow-down text-red-600"></i>
-                            <span class="text-red-600">-2.1% from last week</span>
+                            <span class="text-red-600">{{ percentage_total_orders_change }}% from last month</span>
+                        {% endif %}
                         </div>
                     </div>
 
@@ -64,88 +80,21 @@
                                 <i class="fas fa-chart-line"></i>
                             </div>
                         </div>
-                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp" id="performance-value">96.8%</div>
+                        <div class="text-3xl font-bold bg-gradient-to-r from-shipzoid-navy to-shipzoid-teal bg-clip-text text-transparent mb-2 animate-countUp">{{delivered_rate}}%</div>
                         <div class="flex items-center gap-2 text-sm font-semibold">
+                        {% if percentage_delivered_rate_change >= 0 %}
                             <i class="fas fa-arrow-up text-green-600"></i>
-                            <span class="text-green-600">+2.3% from last month</span>
+                            <span class="text-green-600">+{{ percentage_delivered_rate_change }}% from last month</span>
+                        {% else %}
+                            <i class="fas fa-arrow-down text-red-600"></i>
+                            <span class="text-red-600">{{ percentage_delivered_rate_change }}% from last month</span>
+                        {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts Section -->
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-                    <div class="xl:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-200">
-                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-slate-800">Shipment Analytics</h3>
-                            <div class="relative">
-                                <select id="chart-period" class="appearance-none bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-800 cursor-pointer focus:outline-none focus:border-shipzoid-teal focus:ring-4 focus:ring-shipzoid-teal/10 transition-all duration-300">
-                                    <option value="7">Last 7 days</option>
-                                    <option value="30">Last 30 days</option>
-                                    <option value="90">Last 90 days</option>
-                                </select>
-                                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div class="relative h-80">
-                            <canvas id="shipmentChart"></canvas>
-                        </div>
-                    </div>
+                {% include 'adminpanel/dashboard/partials/shipment-analytics.html' %}
 
-                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-300">
-                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
-                        <div class="mb-6">
-                            <h3 class="text-xl font-bold text-slate-800">Recent Activity</h3>
-                        </div>
-                        <div class="max-h-80 overflow-y-auto space-y-4">
-                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
-                                <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center text-green-600 font-semibold">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-semibold text-slate-800">Shipment #SH-2024-001247 delivered</div>
-                                    <div class="text-xs text-slate-600 font-medium">2 minutes ago</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
-                                <div class="w-10 h-10 bg-gradient-to-br from-shipzoid-teal/20 to-shipzoid-teal/10 rounded-full flex items-center justify-center text-shipzoid-teal-dark font-semibold">
-                                    <i class="fas fa-truck"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-semibold text-slate-800">New shipment dispatched to Mumbai</div>
-                                    <div class="text-xs text-slate-600 font-medium">15 minutes ago</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
-                                <div class="w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center text-amber-600 font-semibold">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-semibold text-slate-800">Route delay reported on NH-48</div>
-                                    <div class="text-xs text-slate-600 font-medium">1 hour ago</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
-                                <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center text-green-600 font-semibold">
-                                    <i class="fas fa-user-plus"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-semibold text-slate-800">New customer onboarded</div>
-                                    <div class="text-xs text-slate-600 font-medium">3 hours ago</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-3 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
-                                <div class="w-10 h-10 bg-gradient-to-br from-shipzoid-teal/20 to-shipzoid-teal/10 rounded-full flex items-center justify-center text-shipzoid-teal-dark font-semibold">
-                                    <i class="fas fa-warehouse"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="font-semibold text-slate-800">Warehouse stock updated</div>
-                                    <div class="text-xs text-slate-600 font-medium">5 hours ago</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Performance Charts -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
@@ -178,8 +127,10 @@
                     </div>
                 </div>
 
+                
+
                 <!-- Quick Actions -->
-                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-400">
+                {% comment %} <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-400">
                     <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
                     <div class="mb-6">
                         <h3 class="text-xl font-bold text-slate-800">Quick Actions</h3>
@@ -206,7 +157,7 @@
                             <span class="font-semibold text-center">Generate Report</span>
                         </a>
                     </div>
-                </div>
+                </div> {% endcomment %}
             </div>
         </main>
 

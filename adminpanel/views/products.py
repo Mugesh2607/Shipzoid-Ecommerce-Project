@@ -3,9 +3,10 @@ from django.http import JsonResponse
 import uuid
 from django.views.decorators.http import require_POST , require_http_methods
 from adminpanel.models import Subcategory  , Category ,Product , Tax , Brands
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 
 @admin_login_required
+@permission_required('product_list')
 def index(request):
     heading = "Products"
     categories = Category.objects.filter(status=1)
@@ -36,6 +37,7 @@ def index(request):
 
 
 @admin_login_required
+@permission_required('product_list')
 def get_products(request):
     products = Product.objects.all().order_by('-id')
     data = []
@@ -64,7 +66,7 @@ def get_products(request):
             'stock_quantity': p.stock_quantity,
             'sizes': p.sizes,
             'description': p.description,
-            'image': p.image.url if p.image else None  # ✅ Use .url
+            'image': p.image.url if p.image else None  #  Use .url
         })
 
     return JsonResponse({'data': data})
@@ -83,6 +85,7 @@ ALLOWED_IMAGE_TYPES = ["jpg", "jpeg", "png"]
 
 
 @admin_login_required
+@permission_required('product_add')
 @require_POST
 def add_product(request):
     try:
@@ -103,7 +106,7 @@ def add_product(request):
         sizes = request.POST.get("sizes") or None
         description = request.POST.get("description") or None
 
-        # ✅ Backend validations
+        # Backend validations
         if not product_name:
             errors["product_name"] = "Product name is required."
         else:
@@ -163,7 +166,7 @@ def add_product(request):
         if errors:
             return JsonResponse({"errors": errors}, status=400)
 
-        # ✅ Generate Product Code here itself
+        #  Generate Product Code here itself
         product_code = generate_product_code()
 
         if image:
@@ -173,7 +176,7 @@ def add_product(request):
 
 
 
-        # ✅ Save Product
+        # Save Product
         product = Product.objects.create(
             product_name=product_name,
             product_code=product_code,
@@ -201,6 +204,7 @@ def add_product(request):
     
 
 @admin_login_required
+@permission_required('product_edit')
 @require_POST
 def edit_product(request):
     try:
@@ -304,7 +308,7 @@ def edit_product(request):
             if product.image:
                 product.image.delete(save=False)
 
-            # ✅ Generate unique filename
+            #  Generate unique filename
             ext = image.name.split('.')[-1].lower()
             unique_filename = f"{uuid.uuid4().hex}.{ext}"
             image.name = unique_filename
@@ -321,12 +325,13 @@ def edit_product(request):
     
 
 @admin_login_required
+@permission_required('product_delete')
 @require_http_methods(["POST", "DELETE"])
 def delete_product(request, id):
     try:
         product = Product.objects.get(id=id)
 
-        # ✅ Delete image file if it exists
+        # Delete image file if it exists
         if product.image:
             product.image.delete(save=False)  # removes file from MEDIA_ROOT
             

@@ -4,11 +4,12 @@ from django.views.decorators.http import require_POST , require_http_methods
 from adminpanel.models import Role   , User
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 from adminpanel.utils.encryption import encrypt_password , decrypt_password
 import uuid
 
 @admin_login_required
+@permission_required('users_list')
 def index(request):
     heading = "Users"
     roles = Role.objects.filter(status=1)
@@ -20,6 +21,7 @@ def index(request):
     return render(request ,'adminpanel/users/index.html',context)
 
 @admin_login_required
+@permission_required('users_list')
 def get_users(request):
     users = User.objects.select_related("role").order_by("-id")
 
@@ -46,6 +48,7 @@ def get_users(request):
 
 ALLOWED_IMAGE_TYPES = ["jpg", "jpeg", "png"]
 @admin_login_required
+@permission_required('user_add')
 @require_POST
 def add_user(request):
     if request.method == "POST":
@@ -119,6 +122,7 @@ def add_user(request):
     return JsonResponse({"error": "Invalid request method!"}, status=405)
 
 @admin_login_required
+@permission_required('user_edit')
 @require_POST
 def edit_user(request):
     try:
@@ -217,6 +221,7 @@ def edit_user(request):
         return JsonResponse({"error": str(e)}, status=500)
     
 @admin_login_required
+@permission_required('user_delete')
 @require_http_methods(["POST", "DELETE"])
 def delete_user(request, id):
     try:

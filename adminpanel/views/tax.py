@@ -2,10 +2,11 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST , require_http_methods
 from adminpanel.models import Tax  
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 from decimal import Decimal, InvalidOperation
 
 @admin_login_required
+@permission_required('tax_list')
 def index(request):
     heading = "Taxes"
     context = {
@@ -15,11 +16,13 @@ def index(request):
     return render(request ,'adminpanel/taxes/index.html',context)
 
 @admin_login_required
+@permission_required('tax_list')
 def get_taxes(request):
     taxes = Tax.objects.all().order_by('-id').values('id', 'name', 'rate' , 'status')
     return JsonResponse({'data': list(taxes)})
 
 @admin_login_required
+@permission_required('tax_add')
 @require_POST
 def add_tax(request):
     name = request.POST.get('name')
@@ -61,6 +64,7 @@ def add_tax(request):
     return JsonResponse({'message': 'Tax added successfully'})
 
 @admin_login_required
+@permission_required('tax_edit')
 @require_POST
 def edit_tax(request):
     tax_id = request.POST.get('id')
@@ -115,6 +119,7 @@ def edit_tax(request):
     return JsonResponse({'message': 'Tax updated successfully'})
 
 @admin_login_required
+@permission_required('tax_delete')
 @require_http_methods(["POST", "DELETE"])
 def delete_tax(request, id):
     try:

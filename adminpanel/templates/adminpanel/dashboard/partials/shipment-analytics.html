@@ -1,0 +1,74 @@
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+                    <div class="xl:col-span-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-200">
+                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-slate-800">Shipment Analytics</h3>
+                            <div class="relative">
+                                <select id="chart-period" class="appearance-none bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-800 cursor-pointer focus:outline-none focus:border-shipzoid-teal focus:ring-4 focus:ring-shipzoid-teal/10 transition-all duration-300">
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30">Last 30 days</option>
+                                    <option value="90">Last 90 days</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-80">
+                            <canvas id="shipmentChart"></canvas>
+                        </div>
+                    </div>
+
+                    {% comment %} <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-300">
+                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-slate-800">Recent Activity</h3>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto space-y-4">
+                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
+                                <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center text-green-600 font-semibold">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-800">Shipment #SH-2024-001247 delivered</div>
+                                    <div class="text-xs text-slate-600 font-medium">2 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
+                                <div class="w-10 h-10 bg-gradient-to-br from-shipzoid-teal/20 to-shipzoid-teal/10 rounded-full flex items-center justify-center text-shipzoid-teal-dark font-semibold">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-800">New shipment dispatched to Mumbai</div>
+                                    <div class="text-xs text-slate-600 font-medium">15 minutes ago</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
+                                <div class="w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center text-amber-600 font-semibold">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-800">Route delay reported on NH-48</div>
+                                    <div class="text-xs text-slate-600 font-medium">1 hour ago</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 border-b border-slate-100 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
+                                <div class="w-10 h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center text-green-600 font-semibold">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-800">New customer onboarded</div>
+                                    <div class="text-xs text-slate-600 font-medium">3 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-3 hover:bg-slate-50 hover:rounded-lg transition-all duration-300">
+                                <div class="w-10 h-10 bg-gradient-to-br from-shipzoid-teal/20 to-shipzoid-teal/10 rounded-full flex items-center justify-center text-shipzoid-teal-dark font-semibold">
+                                    <i class="fas fa-warehouse"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-slate-800">Warehouse stock updated</div>
+                                    <div class="text-xs text-slate-600 font-medium">5 hours ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> {% endcomment %}
+                </div>

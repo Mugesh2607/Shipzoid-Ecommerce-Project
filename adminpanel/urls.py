@@ -80,4 +80,7 @@ urlpatterns  = [
    path('get-delivery-orders/<str:status>/', views.delivery_man.get_orders, name='get_delivery_orders'),
    path('deliveryman-order-view/<str:status>/<str:order_id>', views.delivery_man.view_order, name='deliveryman_view_order'),
    path('complete-delivery/', views.delivery_man.complete_delivery, name='complete_delivery'),
+
+    #Account URLS
+   path("my-account/", views.account.index, name="my_account"),
 ]

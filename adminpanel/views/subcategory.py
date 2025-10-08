@@ -2,11 +2,12 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST , require_http_methods
 from adminpanel.models import Subcategory  , Category
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 import logging
 import time
 
 @admin_login_required
+@permission_required('subcategory_list')
 def index(request):
     heading = "Subcategory"
     categories = Category.objects.filter(status=1)
@@ -19,6 +20,7 @@ def index(request):
     return render(request ,'adminpanel/subcategory/index.html',context)
 
 @admin_login_required
+@permission_required('subcategory_list')
 def get_subcategories(request):
     subcategories = Subcategory.objects.all().order_by('-id').values(
         'id', 'name', 'status', 'category_id'
@@ -35,6 +37,7 @@ def get_subcategories(request):
     return JsonResponse({'data': data})
 
 @admin_login_required
+@permission_required('subcategory_add')
 @require_POST
 def add_subcategory(request):
     name = request.POST.get('name')
@@ -65,6 +68,7 @@ def add_subcategory(request):
     return JsonResponse({'message': 'Subcategory added successfully'})
 
 @admin_login_required
+@permission_required('subcategory_edit')
 @require_POST
 def edit_subcategory(request):
     subcategory_id = request.POST.get('id')
@@ -110,6 +114,7 @@ def edit_subcategory(request):
 
 
 @admin_login_required
+@permission_required('subcategory_delete')
 @require_http_methods(["POST", "DELETE"])
 def delete_subcategory(request, id):
     try:

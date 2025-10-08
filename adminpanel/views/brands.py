@@ -4,9 +4,10 @@ from django.views.decorators.http import require_POST , require_http_methods
 from adminpanel.models import Brands  
 import logging
 import time
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 
 @admin_login_required
+@permission_required('brand_list')
 def index(request):
     heading = "Brands"
     
@@ -17,12 +18,14 @@ def index(request):
     return render(request ,'adminpanel/brands/index.html',context)
 
 @admin_login_required
+@permission_required('brand_list')
 def get_brands(request):
     brands = Brands.objects.all().order_by('-id').values('id', 'name', 'status')
     return JsonResponse({'data': list(brands)})
 
 
 @admin_login_required
+@permission_required('brand_add')
 @require_POST
 def add_brand(request):
     name = request.POST.get('name')
@@ -43,6 +46,7 @@ def add_brand(request):
 
 
 @admin_login_required
+@permission_required('brand_edit')
 @require_POST
 def edit_brand(request):
     brand_id = request.POST.get('id')
@@ -78,6 +82,7 @@ def edit_brand(request):
 
 
 @admin_login_required
+@permission_required('brand_delete')
 @require_http_methods(["POST", "DELETE"])
 def delete_brand(request, id):
     try:

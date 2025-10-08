@@ -10,6 +10,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="{% static 'adminpanel/js/jquery-3.6.4.min.js' %}"></script>
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.1/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <!-- Animate.css for animations -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+    
     <style>
         /* Keyframe for smooth fade & slide animation */
         @keyframes slideFade {
@@ -121,6 +128,59 @@
         }
     </script>
 
+    <script>
+    {% if messages %}
+        {% for message in messages %}
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "timeOut": "3000"
+            };
+
+            {% if message.tags == "error" %}
+                toastr.error("{{ message|escapejs }}");
+            {% elif message.tags == "warning" %}
+                toastr.warning("{{ message|escapejs }}");
+            {% elif message.tags == "success" %}
+                toastr.success("{{ message|escapejs }}");
+            {% else %}
+                toastr.info("{{ message|escapejs }}");
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        {% if messages %}
+            {% for message in messages %}
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: '{% if "error" in message.tags %}error{% elif "warning" in message.tags %}warning{% elif "success" in message.tags %}success{% else %}info{% endif %}',
+                    title: "{{ message|escapejs }}",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: '#fff',
+                    color: '#333',
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                });
+            {% endfor %}
+        {% endif %}
+    });
+</script>
+
+
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.1/dist/sweetalert2.all.min.js"></script>
 
 </body>
 </html>

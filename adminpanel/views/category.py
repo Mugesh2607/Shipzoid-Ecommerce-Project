@@ -4,9 +4,10 @@ from django.views.decorators.http import require_POST , require_http_methods
 from adminpanel.models import Category  
 import logging
 import time
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 
 @admin_login_required
+@permission_required('category_list')
 def index(request):
     heading = "Category"
     context = {
@@ -16,12 +17,14 @@ def index(request):
     return render(request ,'adminpanel/category/category.html',context)
 
 @admin_login_required
+@permission_required('category_list')
 def get_categories(request):
     categories = Category.objects.all().order_by('-id').values('id', 'name', 'status')
     return JsonResponse({'data': list(categories)})
 
 
 @admin_login_required
+@permission_required('category_add')
 @require_POST
 def add_category(request):
     name = request.POST.get('name')
@@ -42,6 +45,7 @@ def add_category(request):
 
 
 @admin_login_required
+@permission_required('category_edit')
 @require_POST
 def edit_category(request):
     category_id = request.POST.get('id')
@@ -79,6 +83,7 @@ logger = logging.getLogger(__name__)
 
 
 @admin_login_required
+@permission_required('category_delete')
 @require_http_methods(["POST", "DELETE"])
 def delete_category(request, id):
     logger.info(f"Delete request received for category id={id} at {time.time()}")

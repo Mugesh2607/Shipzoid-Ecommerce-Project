@@ -8,12 +8,15 @@ import re ,json
 from django.db.models import Case, When, IntegerField
 from decimal import Decimal, ROUND_HALF_UP
 from django.shortcuts import get_object_or_404
-from adminpanel.decorators import admin_login_required
+from adminpanel.decorators import admin_login_required , permission_required
 from django.utils import timezone
 
 @admin_login_required
+@permission_required('order_list')
 def index(request , status):
     heading = f"{status.capitalize()} Orders"
+
+
     context = {
         'heading': heading,
         'status': status,           # current order status
@@ -23,6 +26,7 @@ def index(request , status):
 
 
 @admin_login_required
+@permission_required('order_list')
 def get_orders(request, status):
     # Map frontend status → database status
     status_map = {
@@ -67,6 +71,7 @@ def get_orders(request, status):
 
 
 @admin_login_required
+@permission_required('order_view')
 def view_order(request, status, order_id):
     heading = "View Order Details"
 
@@ -169,6 +174,7 @@ def view_order(request, status, order_id):
     return render(request, 'adminpanel/orders/view.html', context)
 
 @admin_login_required
+@permission_required('order_view')
 def assign_delivery_man(request):
     if request.method == "POST":
         order_id = request.POST.get("order_id")
