@@ -1,0 +1,202 @@
+{% extends 'adminpanel/layouts/base.html' %}
+{% block content %}
+
+<div id="content-area" class="flex-1 p-4 lg:p-8 bg-gradient-to-br from-slate-50 to-slate-100 font-inter min-h-screen">
+  <section id="customer-detail-section" class="animate__animated animate__fadeIn">
+
+    
+    <!-- Customer Header Card -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-md p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 animate-slideIn">
+
+    <!-- Customer Info -->
+    <div class="flex flex-col gap-1">
+        <h2 class="text-2xl font-bold text-slate-800">{{ customer.full_name }}</h2>
+        <p class="text-sm text-gray-500">Email: {{ customer.email }}</p>
+        <p class="text-sm text-gray-500">Phone: {{ customer.phone_number }}</p>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'adminpanel:customers' %}" 
+        class="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-shipzoid-teal text-white font-medium shadow-md hover:bg-teal-700 transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-shipzoid-teal/40">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Back</span>
+        </a>
+    </div>
+
+    </div>
+
+
+    <!-- Card -->
+    <div class="animate-slideIn bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden">
+
+      <!-- Tabs -->
+      <div class="relative border-b border-slate-200">
+        <div class="relative flex flex-wrap">
+          <button class="tab-btn px-6 py-3 font-semibold text-slate-700 hover:text-shipzoid-teal transition-colors relative" data-tab="info">
+            <span class="relative z-10">Profile Info</span>
+            <span class="absolute inset-0 opacity-0 tab-ripple bg-shipzoid-teal/10 transition-opacity"></span>
+          </button>
+          <button class="tab-btn px-6 py-3 font-semibold text-slate-700 hover:text-shipzoid-teal transition-colors relative" data-tab="orders">
+            <span class="relative z-10">Orders</span>
+            <span class="absolute inset-0 opacity-0 tab-ripple bg-shipzoid-teal/10 transition-opacity"></span>
+          </button>
+          <button class="tab-btn px-6 py-3 font-semibold text-slate-700 hover:text-shipzoid-teal transition-colors relative" data-tab="cart">
+            <span class="relative z-10">Cart</span>
+            <span class="absolute inset-0 opacity-0 tab-ripple bg-shipzoid-teal/10 transition-opacity"></span>
+          </button>
+        </div>
+        <span id="tab-indicator" class="absolute bottom-0 h-[3px] bg-gradient-to-r from-shipzoid-teal via-emerald-500 to-shipzoid-teal rounded-full transition-transform duration-300 ease-out"></span>
+        <span id="tab-glow" class="pointer-events-none absolute -bottom-1 h-3 w-28 blur-lg bg-shipzoid-teal/30 rounded-full transition-transform duration-300 ease-out"></span>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="p-6 space-y-6">
+
+        <!-- Profile Info -->
+        <div id="tab-info" class="tab-pane">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700">CUstomer Name</label>
+              <input type="text" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" value="{{ customer.full_name }}" readonly>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700">Email</label>
+              <input type="email" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" value="{{ customer.email }}" readonly>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700">Phone</label>
+              <input type="tel" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" value="{{ customer.phone_number }}" readonly>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700">City</label>
+              <input type="email" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" value="{{ customer.city }}" readonly>
+            </div>
+          </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700">State</label>
+              <input type="tel" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" value="{{ customer.state }}" readonly>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700">Address</label>
+            <input type="text" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:border-shipzoid-teal focus:ring-2 focus:ring-shipzoid-teal/40 outline-none transition" value="{{ customer.address }}" readonly>
+          </div>
+
+        </div>
+
+        <!-- Orders -->
+        <div id="tab-orders" class="tab-pane hidden">
+          <h2 class="text-lg font-semibold text-slate-700 mb-4">Customer Orders</h2>
+          <div class="overflow-x-auto p-4">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Sample Orders -->
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">#1001</td>
+                  <td class="px-6 py-4">Delivered</td>
+                  <td class="px-6 py-4">₹5,430</td>
+                  <td class="px-6 py-4">2025-10-01</td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">#1002</td>
+                  <td class="px-6 py-4">In Progress</td>
+                  <td class="px-6 py-4">₹1,200</td>
+                  <td class="px-6 py-4">2025-10-05</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cart -->
+        <div id="tab-cart" class="tab-pane hidden">
+          <h2 class="text-lg font-semibold text-slate-700 mb-4">Customer Cart</h2>
+          <div class="overflow-x-auto p-4">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Sample Cart -->
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">Product A</td>
+                  <td class="px-6 py-4">2</td>
+                  <td class="px-6 py-4">₹500</td>
+                </tr>
+                <tr class="hover:bg-gray-50 transition">
+                  <td class="px-6 py-4">Product B</td>
+                  <td class="px-6 py-4">1</td>
+                  <td class="px-6 py-4">₹1,200</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<!-- Tab Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tabBtns = document.querySelectorAll(".tab-btn");
+  const panes = document.querySelectorAll(".tab-pane");
+  const indicator = document.getElementById("tab-indicator");
+  const glow = document.getElementById("tab-glow");
+
+  function activateTab(tabName) {
+    tabBtns.forEach(btn => {
+      const isActive = btn.dataset.tab === tabName;
+      btn.classList.toggle("text-shipzoid-teal", isActive);
+      btn.querySelector(".tab-ripple").classList.toggle("opacity-100", isActive);
+    });
+    panes.forEach(pane => {
+      pane.classList.toggle("hidden", pane.id !== `tab-${tabName}`);
+      if (!pane.classList.contains("hidden")) {
+        pane.classList.add("animate__animated", "animate__fadeIn");
+        setTimeout(() => pane.classList.remove("animate__fadeIn"), 400);
+      }
+    });
+
+    const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+    if (activeBtn) {
+      const offsetLeft = activeBtn.offsetLeft;
+      const width = activeBtn.offsetWidth;
+      indicator.style.transform = `translateX(${offsetLeft}px)`;
+      indicator.style.width = `${width}px`;
+      glow.style.transform = `translateX(${offsetLeft + width/2 - 56}px)`;
+    }
+  }
+
+  tabBtns.forEach(btn => btn.addEventListener("click", () => activateTab(btn.dataset.tab)));
+  activateTab("info");
+});
+</script>
+
+{% endblock %}

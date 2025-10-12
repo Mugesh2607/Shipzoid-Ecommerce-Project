@@ -98,33 +98,10 @@
 
                 <!-- Performance Charts -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-400">
-                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-slate-800">Delivery Performance</h3>
-                            <div class="relative">
-                                <select id="performance-period" class="appearance-none bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-800 cursor-pointer focus:outline-none focus:border-shipzoid-teal focus:ring-4 focus:ring-shipzoid-teal/10 transition-all duration-300">
-                                    <option value="weekly">Weekly</option>
-                                    <option value="monthly">Monthly</option>
-                                    <option value="quarterly">Quarterly</option>
-                                </select>
-                                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div class="relative h-80">
-                            <canvas id="performanceChart"></canvas>
-                        </div>
-                    </div>
+                    {% include 'adminpanel/dashboard/partials/delivery-performance.html' %}
+                    {% include 'adminpanel/dashboard/partials/donut-chart.html' %}
 
-                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-500">
-                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
-                        <div class="mb-6">
-                            <h3 class="text-xl font-bold text-slate-800">Revenue Distribution</h3>
-                        </div>
-                        <div class="relative h-80">
-                            <canvas id="revenueChart"></canvas>
-                        </div>
-                    </div>
+
                 </div>
 
                 

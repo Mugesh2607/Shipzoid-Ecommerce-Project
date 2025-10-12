@@ -66,6 +66,7 @@ urlpatterns  = [
     #Customer URLS
     path("customers/" ,views.customer.index , name="customers") ,
     path('get-customers/', views.customer.get_customers, name='get_customers'),
+    path('customers/view/<str:encrypted_id>/', views.customer.customer_view, name='customer_view'),
 
     #Order URLS
    path("orders/<str:status>/", views.orders.index, name="orders"),

@@ -1,0 +1,86 @@
+                    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-shipzoid-teal relative overflow-hidden animate-slideUp delay-400">
+                        <div class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-shipzoid-teal to-shipzoid-navy"></div>
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-slate-800">Delivery Performance</h3>
+                            <div class="relative">
+                                <select id="performance-period" class="appearance-none bg-white border border-slate-200 rounded-lg px-4 py-2 text-sm text-slate-800 cursor-pointer focus:outline-none focus:border-shipzoid-teal focus:ring-4 focus:ring-shipzoid-teal/10 transition-all duration-300">
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div class="relative h-80">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+
+
+<script>
+function initPerformanceChart() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+
+    charts.performance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['On Time', 'Delayed', 'Lost', 'Returned'],
+            datasets: [{
+                label: 'Delivery Status',
+                data: [85, 10, 2, 3],
+                backgroundColor: ['#4ECDC4', '#f59e0b', '#ef4444', '#6b7280'],
+                borderColor: ['#3BB5AF', '#d97706', '#dc2626', '#4b5563'],
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(226, 232, 240, 0.5)' },
+                    ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { family: 'Inter', size: 11 }, color: '#64748b' }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutCubic'
+            }
+        }
+    });
+}
+
+// Initialize chart on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initPerformanceChart();
+
+    // Optional: Change data on dropdown select
+    document.getElementById('performance-period').addEventListener('change', (e) => {
+        const period = e.target.value;
+        let data;
+        switch(period) {
+            case 'weekly':
+                data = [85, 10, 2, 3];
+                break;
+            case 'monthly':
+                data = [340, 45, 8, 12];
+                break;
+            case 'quarterly':
+                data = [1020, 150, 25, 36];
+                break;
+        }
+        charts.performance.data.datasets[0].data = data;
+        charts.performance.update('active');
+    });
+});
+</script>
